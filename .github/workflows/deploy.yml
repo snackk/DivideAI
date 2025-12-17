@@ -8,12 +8,15 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
+        
       - name: Inject Firebase Config
         env:
           CONFIG: ${{ secrets.FIREBASE_CONFIG }}
         run: |
-          sed -i "s|__FIREBASE_CONFIG_PLACEHOLDER__|$CONFIG|g" index.html
+          echo "$CONFIG" > firebase-config.json
+          sed -i '/__FIREBASE_CONFIG_PLACEHOLDER__/r firebase-config.json' index.html
+          sed -i '/__FIREBASE_CONFIG_PLACEHOLDER__/d' index.html
+          rm firebase-config.json
 
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@v4
