@@ -10,11 +10,13 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Inject Firebase Config
+        env:
+          CONFIG: ${{ secrets.FIREBASE_CONFIG }}
         run: |
-          sed -i "s/__FIREBASE_CONFIG_PLACEHOLDER__/${{ secrets.FIREBASE_CONFIG }}/g" index.html
+          sed -i "s|__FIREBASE_CONFIG_PLACEHOLDER__|$CONFIG|g" index.html
 
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          folder: .
+          folder: . # Pasta onde está o index.html (raiz do projeto)
           branch: gh-pages
