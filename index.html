@@ -521,39 +521,72 @@
                 mainContent.innerHTML = `<div class="p-12 text-center opacity-40"><i class="fas fa-receipt text-5xl mb-4"></i><p>${t('noExpenses')}</p></div>`;
                 return;
             }
-            let html = '<div class="view-content space-y-3">';
-            expenses.forEach(exp => {
-                // Encontrar o nome do amigo na lista de amigos, ou usar o e-mail como fallback
-                const friend = friends.find(f => f.email === exp.friendId) || { displayName: exp.friendId.split('@')[0] };
+
+            // 1. Agrupar despesas por amigo (E-mail)
+            const grouped = expenses.reduce((acc, exp) => {
+                if (!acc[exp.friendId]) acc[exp.friendId] = [];
+                acc[exp.friendId].push(exp);
+                return acc;
+            }, {});
+
+            let html = '<div class="view-content space-y-4">';
+
+            // 2. Iterar sobre cada grupo de amigo
+            Object.keys(grouped).forEach(friendEmail => {
+                const friendExpenses = grouped[friendEmail];
+                const friend = friends.find(f => f.email === friendEmail) || { displayName: friendEmail.split('@')[0] };
                 
-                // Determinar se EU paguei a conta total
-                const iPaidTotal = exp.paidByEmail === currentUser.email;
-                
-                // O valor que aparece como "receber" ou "dever"
-                const amountToDisplay = (exp.splitType === 'equal') ? exp.amount / 2 : exp.amount;
-                
+                // Calcular o balanço total deste grupo para o cabeçalho
+                const groupBalance = friendExpenses.reduce((sum, e) => {
+                    const amount = (e.splitType === 'equal') ? e.amount / 2 : e.amount;
+                    return sum + (e.paidByEmail === currentUser.email ? amount : -amount);
+                }, 0);
+
                 html += `
-                    <div class="material-card p-4 flex items-center gap-4 relative">
-                        <div class="w-10 h-10 rounded-full bg-[#381e72] flex items-center justify-center text-[#d0bcff]">
-                            <i class="fas ${iPaidTotal ? 'fa-arrow-up' : 'fa-arrow-down'} text-xs"></i>
+                    <div class="space-y-2">
+                        <div onclick="toggleGroup('${friendEmail.replace(/\./g, '_')}')" 
+                             class="flex items-center gap-3 p-3 bg-[#2b2930] rounded-2xl cursor-pointer active:scale-[0.98] transition-transform">
+                            <div class="w-10 h-10 rounded-full bg-[#49454f] flex items-center justify-center overflow-hidden">
+                                ${friend.photoURL ? `<img src="${friend.photoURL}" class="w-full h-full object-cover">` : `<i class="fas fa-user text-xs"></i>`}
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="font-bold text-sm text-[#e6e1e5]">${friend.displayName}</h4>
+                                <p class="text-[10px] text-[#938f99]">${friendExpenses.length} despesas</p>
+                            </div>
+                            <div class="text-right mr-2">
+                                <p class="text-xs font-bold ${groupBalance >= 0 ? 'text-green-400' : 'text-orange-400'}">
+                                    ${groupBalance >= 0 ? '+' : ''}${groupBalance.toFixed(2)}€
+                                </p>
+                            </div>
+                            <i id="icon-${friendEmail.replace(/\./g, '_')}" class="fas fa-chevron-down text-[#938f99] text-xs transition-transform"></i>
                         </div>
-                        <div class="flex-1">
-                            <h4 class="font-medium text-sm text-[#e6e1e5]">${exp.description}</h4>
-                            <p class="text-[10px] text-[#938f99]">
-                                ${iPaidTotal ? t('youPaid') : friend.displayName + t('friendPaid')} • ${new Date(exp.date).toLocaleDateString()}
-                            </p>
+
+                        <div id="group-${friendEmail.replace(/\./g, '_')}" class="hidden space-y-2 ml-4 border-l-2 border-[#49454f] pl-4">
+                            ${friendExpenses.map(exp => {
+                                const iPaid = exp.paidByEmail === currentUser.email;
+                                const displayAmount = (exp.splitType === 'equal') ? exp.amount / 2 : exp.amount;
+                                return `
+                                    <div class="material-card p-3 flex items-center gap-4 relative bg-[#1c1b1f]">
+                                        <div class="flex-1">
+                                            <h5 class="text-xs font-medium">${exp.description}</h5>
+                                            <p class="text-[9px] text-[#938f99]">${new Date(exp.date).toLocaleDateString()}</p>
+                                        </div>
+                                        <div class="text-right">
+                                            <p class="text-[#d0bcff] font-bold text-xs">${exp.amount.toFixed(2)}€</p>
+                                            <p class="text-[8px] ${iPaid ? 'text-green-400' : 'text-orange-400'}">
+                                                ${iPaid ? t('youReceive') : t('youOwe')} ${displayAmount.toFixed(2)}€
+                                            </p>
+                                        </div>
+                                        ${exp.creatorEmail === currentUser.email ? 
+                                            `<button onclick="event.stopPropagation(); window.editExpense('${exp.id}')" class="p-2 text-[#938f99]"><i class="fas fa-pen text-[9px]"></i></button>` : ''}
+                                    </div>
+                                `;
+                            }).join('')}
                         </div>
-                        <div class="text-right">
-                            <p class="text-[#d0bcff] font-bold text-sm">${exp.amount.toFixed(2)}€</p>
-                            <p class="text-[9px] font-medium ${iPaidTotal ? 'text-green-400' : 'text-orange-400'}">
-                                ${iPaidTotal ? t('youReceive') + amountToDisplay.toFixed(2) : t('youOwe') + amountToDisplay.toFixed(2)}
-                            </p>
-                        </div>
-                        ${exp.creatorEmail === currentUser.email ? 
-                            `<button onclick="window.editExpense('${exp.id}')" class="absolute right-2 top-2 p-2 text-[#938f99]"><i class="fas fa-pen text-[10px]"></i></button>` 
-                            : ''}
-                    </div>`;
+                    </div>
+                `;
             });
+
             mainContent.innerHTML = html + '</div>';
         };
 
@@ -814,6 +847,17 @@
             updateSplitPreview();
             expenseModal.classList.remove('hidden');
         };
+        window.toggleGroup = (id) => {
+            const el = document.getElementById(`group-${id}`);
+            const icon = document.getElementById(`icon-${id}`);
+            if (el.classList.contains('hidden')) {
+                el.classList.remove('hidden');
+                icon.style.transform = 'rotate(180deg)';
+            } else {
+                el.classList.add('hidden');
+                icon.style.transform = 'rotate(0deg)';
+            }
+        };        
 
     </script>
 </body>
