@@ -86,8 +86,14 @@
         
         <header class="p-4 flex items-center justify-between sticky top-0 bg-[#1c1b1f] z-10">
             <h2 id="view-title" class="text-xl font-medium">Atividade</h2>
-            <div class="flex gap-4 items-center">
-                <button class="text-[#938f99]"><i class="fas fa-search text-xl"></i></button>
+            <div class="flex gap-4 items-center flex-1 justify-end">
+                <div id="search-container" class="flex items-center bg-[#2b2930] rounded-full px-3 py-1 hidden w-full max-w-[200px] transition-all">
+                    <input type="text" id="search-input" placeholder="Procurar..." 
+                           class="bg-transparent border-none outline-none text-xs w-full text-[#e6e1e5] placeholder-[#938f99]">
+                    <button onclick="closeSearch()"><i class="fas fa-times text-[#938f99] text-xs"></i></button>
+                </div>
+                <button id="search-trigger" class="text-[#938f99]"><i class="fas fa-search text-xl"></i></button>
+                
                 <div id="user-header-profile" class="w-8 h-8 rounded-full bg-[#49454f] overflow-hidden border border-[#938f99] cursor-pointer" onclick="switchView('account')">
                     <i class="fas fa-user text-xs flex items-center justify-center h-full"></i>
                 </div>
@@ -344,7 +350,7 @@
                 splitInfoFriendEqual: "Friend pays and you owe half.",
                 splitInfoFriendFull: "Friend pays and you owe full."
             }
-        };
+        };     
 
         let currentLang = 'pt';
         function t(key) { return i18n[currentLang][key] || key; }
@@ -368,6 +374,33 @@
         let expenses = [];
         let friends = [];
         let currentView = 'activity';
+
+        // SEARCH
+        let searchTerm = "";
+
+        // Elementos de Pesquisa
+        const searchTrigger = document.getElementById('search-trigger');
+        const searchContainer = document.getElementById('search-container');
+        const searchInput = document.getElementById('search-input');
+
+        searchTrigger.addEventListener('click', () => {
+            searchTrigger.classList.add('hidden');
+            searchContainer.classList.remove('hidden');
+            searchInput.focus();
+        });
+
+        window.closeSearch = () => {
+            searchTerm = "";
+            searchInput.value = "";
+            searchContainer.classList.add('hidden');
+            searchTrigger.classList.remove('hidden');
+            refreshCurrentView();
+        };
+
+        searchInput.addEventListener('input', (e) => {
+            searchTerm = e.target.value.toLowerCase();
+            refreshCurrentView();
+        });           
 
         // Elements
         const authScreen = document.getElementById('auth-screen');
@@ -517,13 +550,24 @@
 
         const renderActivity = () => {
             viewTitle.textContent = t('activityTitle');
-            if (expenses.length === 0) {
-                mainContent.innerHTML = `<div class="p-12 text-center opacity-40"><i class="fas fa-receipt text-5xl mb-4"></i><p>${t('noExpenses')}</p></div>`;
+            
+            // 1. FILTRO DE PESQUISA: Filtra despesas pela descrição ou nome do amigo
+            const filteredExpenses = expenses.filter(exp => {
+                const descriptionMatch = exp.description.toLowerCase().includes(searchTerm);
+                const friend = friends.find(f => f.email === exp.friendId);
+                const nameMatch = friend ? friend.displayName.toLowerCase().includes(searchTerm) : false;
+                // Se não encontrar o amigo na lista, tenta pesquisar pelo e-mail (ID)
+                const emailMatch = exp.friendId.toLowerCase().includes(searchTerm);
+                return descriptionMatch || nameMatch || emailMatch;
+            });
+
+            if (filteredExpenses.length === 0) {
+                mainContent.innerHTML = `<div class="p-12 text-center opacity-40"><i class="fas fa-search text-5xl mb-4"></i><p>Nenhuma despesa encontrada.</p></div>`;
                 return;
             }
 
-            // 1. Agrupar despesas por amigo (E-mail)
-            const grouped = expenses.reduce((acc, exp) => {
+            // 2. AGRUPAMENTO: Agrupa as despesas filtradas por e-mail do amigo
+            const grouped = filteredExpenses.reduce((acc, exp) => {
                 if (!acc[exp.friendId]) acc[exp.friendId] = [];
                 acc[exp.friendId].push(exp);
                 return acc;
@@ -531,22 +575,25 @@
 
             let html = '<div class="view-content space-y-4">';
 
-            // 2. Iterar sobre cada grupo de amigo
+            // 3. RENDERIZAÇÃO: Cria os cartões de utilizador expansíveis
             Object.keys(grouped).forEach(friendEmail => {
                 const friendExpenses = grouped[friendEmail];
                 const friend = friends.find(f => f.email === friendEmail) || { displayName: friendEmail.split('@')[0] };
                 
-                // Calcular o balanço total deste grupo para o cabeçalho
+                // Calcula o saldo total com este amigo específico (baseado nas despesas visíveis)
                 const groupBalance = friendExpenses.reduce((sum, e) => {
                     const amount = (e.splitType === 'equal') ? e.amount / 2 : e.amount;
                     return sum + (e.paidByEmail === currentUser.email ? amount : -amount);
                 }, 0);
 
+                // ID seguro para o HTML (remove pontos do e-mail)
+                const safeId = friendEmail.replace(/\./g, '_');
+
                 html += `
                     <div class="space-y-2">
-                        <div onclick="toggleGroup('${friendEmail.replace(/\./g, '_')}')" 
-                             class="flex items-center gap-3 p-3 bg-[#2b2930] rounded-2xl cursor-pointer active:scale-[0.98] transition-transform">
-                            <div class="w-10 h-10 rounded-full bg-[#49454f] flex items-center justify-center overflow-hidden">
+                        <div onclick="toggleGroup('${safeId}')" 
+                             class="flex items-center gap-3 p-3 bg-[#2b2930] rounded-2xl cursor-pointer active:scale-[0.98] transition-transform shadow-sm">
+                            <div class="w-10 h-10 rounded-full bg-[#49454f] flex items-center justify-center overflow-hidden border border-[#938f99]/20">
                                 ${friend.photoURL ? `<img src="${friend.photoURL}" class="w-full h-full object-cover">` : `<i class="fas fa-user text-xs"></i>`}
                             </div>
                             <div class="flex-1">
@@ -558,27 +605,29 @@
                                     ${groupBalance >= 0 ? '+' : ''}${groupBalance.toFixed(2)}€
                                 </p>
                             </div>
-                            <i id="icon-${friendEmail.replace(/\./g, '_')}" class="fas fa-chevron-down text-[#938f99] text-xs transition-transform"></i>
+                            <i id="icon-${safeId}" class="fas fa-chevron-down text-[#938f99] text-[10px] transition-transform"></i>
                         </div>
 
-                        <div id="group-${friendEmail.replace(/\./g, '_')}" class="hidden space-y-2 ml-4 border-l-2 border-[#49454f] pl-4">
+                        <div id="group-${safeId}" class="hidden space-y-2 ml-4 border-l-2 border-[#49454f] pl-4 transition-all">
                             ${friendExpenses.map(exp => {
                                 const iPaid = exp.paidByEmail === currentUser.email;
                                 const displayAmount = (exp.splitType === 'equal') ? exp.amount / 2 : exp.amount;
                                 return `
-                                    <div class="material-card p-3 flex items-center gap-4 relative bg-[#1c1b1f]">
+                                    <div class="material-card p-3 flex items-center gap-4 relative bg-[#1c1b1f] border border-[#49454f]/30">
                                         <div class="flex-1">
-                                            <h5 class="text-xs font-medium">${exp.description}</h5>
+                                            <h5 class="text-xs font-medium text-[#e6e1e5]">${exp.description}</h5>
                                             <p class="text-[9px] text-[#938f99]">${new Date(exp.date).toLocaleDateString()}</p>
                                         </div>
-                                        <div class="text-right">
+                                        <div class="text-right pr-8">
                                             <p class="text-[#d0bcff] font-bold text-xs">${exp.amount.toFixed(2)}€</p>
                                             <p class="text-[8px] ${iPaid ? 'text-green-400' : 'text-orange-400'}">
                                                 ${iPaid ? t('youReceive') : t('youOwe')} ${displayAmount.toFixed(2)}€
                                             </p>
                                         </div>
                                         ${exp.creatorEmail === currentUser.email ? 
-                                            `<button onclick="event.stopPropagation(); window.editExpense('${exp.id}')" class="p-2 text-[#938f99]"><i class="fas fa-pen text-[9px]"></i></button>` : ''}
+                                            `<button onclick="event.stopPropagation(); window.editExpense('${exp.id}')" class="absolute right-2 p-2 text-[#938f99] hover:text-[#d0bcff]">
+                                                <i class="fas fa-pen text-[9px]"></i>
+                                            </button>` : ''}
                                     </div>
                                 `;
                             }).join('')}
