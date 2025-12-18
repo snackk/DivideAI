@@ -1,12 +1,15 @@
 {
-  "name": "Dividir Contas",
-  "short_name": "Divide.Ai",
+  "name": "DivideAI - Dividir Contas",
+  "short_name": "DivideAI",
   "start_url": "index.html",
   "display": "standalone",
   "background_color": "#1c1b1f",
   "theme_color": "#d0bcff",
   "icons": [
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
+    {
+      "src": "logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
   ]
 }
