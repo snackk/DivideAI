@@ -350,7 +350,7 @@
         function t(key) { return i18n[currentLang][key] || key; }
 
         // --- FIREBASE ---
-        const firebaseConfig = __FIREBASE_CONFIG_PLACEHOLDER__;
+        const firebaseConfig = __FIREBASE_CONFIG_PLACEHOLDER__
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
