@@ -19,11 +19,7 @@ jobs:
           CONFIG: ${{ secrets.FIREBASE_CONFIG }}
         run: |
           echo "$CONFIG" > firebase-config.json
-          awk '/__FIREBASE_CONFIG_PLACEHOLDER__/ { 
-            getline config < "firebase-config.json"; 
-            print "const firebaseConfig = " config ";"; 
-            next 
-          } 1' index.html > index.new && mv index.new index.html
+          sed -i "s|__FIREBASE_CONFIG_PLACEHOLDER__|$(cat firebase-config.json)|g" index.html
           rm firebase-config.json
 
       - name: Deploy
