@@ -226,7 +226,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signInWithCustomToken, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, getDoc, getDocs, addDoc, onSnapshot, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, doc, setDoc, getDoc, getDocs, addDoc, onSnapshot, updateDoc, deleteDoc, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- TRADUÇÕES ---
         const i18n = {
@@ -457,15 +457,32 @@
 
         function setupDataSync() {
             if (!currentUser) return;
+
+            // Sincronizar Amigos (Mantém-se igual)
             const friendsCol = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'friends');
             onSnapshot(friendsCol, (snap) => {
                 friends = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                 populateFriendSelect();
                 refreshCurrentView();
             });
-            const expensesCol = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'expenses');
-            onSnapshot(expensesCol, (snap) => {
-                expenses = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+            // NOVA LOGICA: Sincronizar Despesas Partilhadas
+            const globalExpensesCol = collection(db, 'artifacts', appId, 'shared_expenses');
+            // Procuramos despesas onde o utilizador logado é o criador OU o amigo
+            const q = query(globalExpensesCol, where("involvedUsers", "array-contains", currentUser.email));
+
+            onSnapshot(q, (snap) => {
+                expenses = snap.docs.map(d => {
+                    const data = d.data();
+                    // Normalizamos os campos para o resto do teu código não partir
+                    return {
+                        id: d.id,
+                        ...data,
+                        // Adaptamos para a tua lógica visual de 'me' vs 'friend'
+                        paidBy: data.paidByEmail === currentUser.email ? 'me' : 'friend',
+                        friendId: data.creatorEmail === currentUser.email ? data.friendEmail : data.creatorEmail
+                    };
+                });
                 expenses.sort((a, b) => b.timestamp - a.timestamp);
                 refreshCurrentView();
             });
@@ -506,25 +523,35 @@
             }
             let html = '<div class="view-content space-y-3">';
             expenses.forEach(exp => {
+                // Encontrar o nome do amigo na lista de amigos, ou usar o e-mail como fallback
                 const friend = friends.find(f => f.email === exp.friendId) || { displayName: exp.friendId.split('@')[0] };
-                const isMe = exp.paidBy === 'me';
-                const amount = (exp.splitType === 'equal') ? exp.amount / 2 : exp.amount;
+                
+                // Determinar se EU paguei a conta total
+                const iPaidTotal = exp.paidByEmail === currentUser.email;
+                
+                // O valor que aparece como "receber" ou "dever"
+                const amountToDisplay = (exp.splitType === 'equal') ? exp.amount / 2 : exp.amount;
+                
                 html += `
                     <div class="material-card p-4 flex items-center gap-4 relative">
                         <div class="w-10 h-10 rounded-full bg-[#381e72] flex items-center justify-center text-[#d0bcff]">
-                            <i class="fas ${isMe ? 'fa-arrow-up' : 'fa-arrow-down'} text-xs"></i>
+                            <i class="fas ${iPaidTotal ? 'fa-arrow-up' : 'fa-arrow-down'} text-xs"></i>
                         </div>
                         <div class="flex-1">
                             <h4 class="font-medium text-sm text-[#e6e1e5]">${exp.description}</h4>
-                            <p class="text-[10px] text-[#938f99]">${isMe ? t('youPaid') : friend.displayName + t('friendPaid')} • ${new Date(exp.date).toLocaleDateString()}</p>
+                            <p class="text-[10px] text-[#938f99]">
+                                ${iPaidTotal ? t('youPaid') : friend.displayName + t('friendPaid')} • ${new Date(exp.date).toLocaleDateString()}
+                            </p>
                         </div>
                         <div class="text-right">
                             <p class="text-[#d0bcff] font-bold text-sm">${exp.amount.toFixed(2)}€</p>
-                            <p class="text-[9px] font-medium ${isMe ? 'text-green-400' : 'text-orange-400'}">
-                                ${isMe ? t('youReceive') + amount.toFixed(2) : t('youOwe') + amount.toFixed(2)}
+                            <p class="text-[9px] font-medium ${iPaidTotal ? 'text-green-400' : 'text-orange-400'}">
+                                ${iPaidTotal ? t('youReceive') + amountToDisplay.toFixed(2) : t('youOwe') + amountToDisplay.toFixed(2)}
                             </p>
                         </div>
-                        <button onclick="window.editExpense('${exp.id}')" class="absolute right-2 top-2 p-2 text-[#938f99]"><i class="fas fa-pen text-[10px]"></i></button>
+                        ${exp.creatorEmail === currentUser.email ? 
+                            `<button onclick="window.editExpense('${exp.id}')" class="absolute right-2 top-2 p-2 text-[#938f99]"><i class="fas fa-pen text-[10px]"></i></button>` 
+                            : ''}
                     </div>`;
             });
             mainContent.innerHTML = html + '</div>';
@@ -682,10 +709,18 @@
         function calculateFriendBalance(email) {
             let bal = 0;
             expenses.forEach(e => {
-                if (e.friendId === email) {
-                    const amount = (e.splitType === 'equal') ? e.amount / 2 : e.amount;
-                    if (e.paidBy === 'me') bal += amount;
-                    else bal -= amount;
+                // Verifica se esta despesa é entre eu e este amigo específico
+                if (e.involvedUsers.includes(email)) {
+                    const totalAmount = e.amount;
+                    const share = (e.splitType === 'equal') ? totalAmount / 2 : totalAmount;
+                    
+                    if (e.paidByEmail === currentUser.email) {
+                        // Eu paguei, ele deve-me
+                        bal += share;
+                    } else {
+                        // Ele pagou, eu devo-lhe
+                        bal -= share;
+                    }
                 }
             });
             return bal;
@@ -730,23 +765,38 @@
         expenseForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             if (!currentUser) return;
+            
             const id = document.getElementById('exp-id').value;
+            const friendEmail = document.getElementById('exp-friend').value;
+            
             const data = {
                 description: document.getElementById('exp-desc').value,
                 amount: parseFloat(document.getElementById('exp-amount').value),
                 date: document.getElementById('exp-date').value,
-                friendId: document.getElementById('exp-friend').value,
-                paidBy: document.getElementById('exp-paid-by').value,
+                creatorEmail: currentUser.email, // Quem criou
+                friendEmail: friendEmail,       // Com quem partilhou
+                paidByEmail: document.getElementById('exp-paid-by').value === 'me' ? currentUser.email : friendEmail,
                 splitType: document.getElementById('exp-split-type').value,
-                timestamp: Date.now()
+                timestamp: Date.now(),
+                // Array para facilitar a query no Firebase
+                involvedUsers: [currentUser.email, friendEmail]
             };
+
             try {
-                const col = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'expenses');
-                if (id) await updateDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'expenses', id), data);
-                else await addDoc(col, data);
+                // Agora usamos uma coleção global de despesas do App
+                const globalExpensesCol = collection(db, 'artifacts', appId, 'shared_expenses');
+                
+                if (id) {
+                    await updateDoc(doc(db, 'artifacts', appId, 'shared_expenses', id), data);
+                } else {
+                    await addDoc(globalExpensesCol, data);
+                }
+                
                 expenseModal.classList.add('hidden');
                 showToast(id ? t('toastUpdated') : t('toastCreated'));
-            } catch (err) { console.error(err); }
+            } catch (err) { 
+                console.error("Erro ao salvar despesa:", err); 
+            }
         });
 
         window.editExpense = (id) => {
