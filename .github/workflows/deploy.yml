@@ -19,7 +19,7 @@ jobs:
           CONFIG: ${{ secrets.FIREBASE_CONFIG }}
         run: |
           echo "$CONFIG" > firebase-config.json
-          sed -i "s|__FIREBASE_CONFIG_PLACEHOLDER__|$(cat firebase-config.json)|g" index.html
+          sed -i '/__FIREBASE_CONFIG_PLACEHOLDER__/c\' firebase-config.json index.html
           rm firebase-config.json
 
       - name: Deploy
