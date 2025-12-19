@@ -32,7 +32,7 @@
         }
 
         .safe-area-bottom {
-            padding-bottom: env(safe-area-inset-bottom);
+            padding-bottom: calc(env(safe-area-inset-bottom) + 10px);
         }
 
         .material-card {
@@ -111,29 +111,32 @@
         </main>
 
         <!-- Navegação Inferior -->
-        <nav class="fixed bottom-0 left-0 right-0 bg-[#2b2930] border-t border-[#49454f] flex justify-between items-center px-2 py-2 safe-area-bottom max-w-md mx-auto z-50 h-16">
-            <button onclick="switchView('activity')" class="nav-item flex flex-col items-center p-2 text-[#d0bcff] flex-1">
+        <nav class="fixed bottom-0 left-0 right-0 bg-[#2b2930] border-t border-[#49454f] flex justify-between items-center px-4 safe-area-bottom max-w-md mx-auto z-50 h-20 shadow-[0_-4px_10px_rgba(0,0,0,0.3)]">
+            
+            <button onclick="switchView('activity')" class="nav-item flex flex-col items-center justify-center text-[#d0bcff] flex-1 transition-all active:opacity-50">
                 <i class="fas fa-clock text-xl mb-1"></i>
-                <span id="nav-activity" class="text-[10px]">Atividade</span>
+                <span id="nav-activity" class="text-[10px] font-medium">Atividade</span>
             </button>
-            <button onclick="switchView('friends')" class="nav-item flex flex-col items-center p-2 text-[#938f99] flex-1">
+        
+            <button onclick="switchView('friends')" class="nav-item flex flex-col items-center justify-center text-[#938f99] flex-1 transition-all active:opacity-50">
                 <i class="fas fa-users text-xl mb-1"></i>
-                <span id="nav-friends" class="text-[10px]">Amigos</span>
+                <span id="nav-friends" class="text-[10px] font-medium">Amigos</span>
             </button>
             
-            <div class="flex-1 flex justify-center items-center">
-                <button id="open-contextual-modal" class="w-12 h-12 bg-[#d0bcff] rounded-2xl flex items-center justify-center text-[#381e72] shadow-lg transition-transform active:scale-90">
-                    <i class="fas fa-plus text-xl"></i>
+            <div class="flex-1 flex justify-center items-center -mt-8">
+                <button id="open-contextual-modal" class="w-14 h-14 bg-[#d0bcff] rounded-2xl flex items-center justify-center text-[#381e72] shadow-2xl transition-transform active:scale-90 border-4 border-[#1c1b1f]">
+                    <i class="fas fa-plus text-2xl"></i>
                 </button>
             </div>
-
-            <button onclick="switchView('groups')" class="nav-item flex flex-col items-center p-2 text-[#938f99] flex-1">
+        
+            <button onclick="switchView('groups')" class="nav-item flex flex-col items-center justify-center text-[#938f99] flex-1 transition-all active:opacity-50">
                 <i class="fas fa-layer-group text-xl mb-1"></i>
-                <span id="nav-groups" class="text-[10px]">Grupos</span>
+                <span id="nav-groups" class="text-[10px] font-medium">Grupos</span>
             </button>
-            <button onclick="switchView('account')" class="nav-item flex flex-col items-center p-2 text-[#938f99] flex-1">
+        
+            <button onclick="switchView('account')" class="nav-item flex flex-col items-center justify-center text-[#938f99] flex-1 transition-all active:opacity-50">
                 <i class="fas fa-user-circle text-xl mb-1"></i>
-                <span id="nav-account" class="text-[10px]">Conta</span>
+                <span id="nav-account" class="text-[10px] font-medium">Conta</span>
             </button>
         </nav>
 
