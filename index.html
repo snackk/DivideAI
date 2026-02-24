@@ -65,7 +65,6 @@
 </head>
 <body class="min-h-screen flex flex-col">
 
-<!-- Ecrã de Carregamento / Auth -->
 <div id="auth-screen" class="fixed inset-0 z-50 bg-[#1c1b1f] flex flex-col items-center justify-center p-6 text-center">
     <div class="mb-8">
         <div class="w-20 h-20 bg-[#d0bcff] rounded-full flex items-center justify-center mx-auto mb-4">
@@ -87,7 +86,6 @@
     <p id="auth-status" class="mt-4 text-xs text-[#938f99]"></p>
 </div>
 
-<!-- App Principal -->
 <div id="app-container" class="hidden flex-col h-screen max-w-md mx-auto w-full relative">
 
     <header class="p-4 flex items-center justify-between sticky top-0 bg-[#1c1b1f] z-10 shadow-sm">
@@ -95,7 +93,7 @@
             <button id="back-btn" class="hidden text-[#e6e1e5] p-2 -ml-2 rounded-full hover:bg-[#2b2930] transition-colors" onclick="goBack()">
                 <i class="fas fa-arrow-left text-lg"></i>
             </button>
-            <h2 id="view-title" class="text-xl font-medium">Atividade</h2>
+            <div id="view-title" class="text-xl font-medium flex items-center gap-2">Atividade</div>
         </div>
 
         <div class="flex gap-4 items-center flex-1 justify-end">
@@ -113,10 +111,8 @@
     </header>
 
     <main id="main-content" class="flex-1 overflow-y-auto p-4 space-y-4 pb-24">
-        <!-- Vistas dinâmicas aqui -->
     </main>
 
-    <!-- Navegação Inferior -->
     <nav class="fixed bottom-0 left-0 right-0 bg-[#2b2930] border-t border-[#49454f] flex justify-between items-center px-4 safe-area-bottom max-w-md mx-auto z-50 h-20 shadow-[0_-4px_10px_rgba(0,0,0,0.3)]">
 
         <button onclick="switchView('activity')" class="nav-item flex flex-col items-center justify-center text-[#d0bcff] flex-1 transition-all active:opacity-50" data-view="activity">
@@ -148,7 +144,6 @@
 
 </div>
 
-<!-- Modal para Nova/Editar Despesa -->
 <div id="expense-modal" class="fixed inset-0 z-[60] bg-black/60 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
     <div class="bg-[#2b2930] w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 view-content">
         <div class="flex justify-between items-center mb-6">
@@ -213,7 +208,6 @@
     </div>
 </div>
 
-<!-- Modal para Adicionar Amigo -->
 <div id="friend-modal" class="fixed inset-0 z-[60] bg-black/60 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
     <div class="bg-[#2b2930] w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 view-content">
         <div class="flex justify-between items-center mb-6">
@@ -237,6 +231,22 @@
                 Adicionar à Lista
             </button>
         </form>
+    </div>
+</div>
+
+<div id="settle-modal" class="fixed inset-0 z-[60] bg-black/60 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-[#2b2930] w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 view-content">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xl font-bold">Liquidar Contas</h3>
+            <button onclick="closeSettleModal()" class="text-[#938f99] p-2"><i class="fas fa-times"></i></button>
+        </div>
+
+        <div id="settle-content" class="text-center mb-6 text-[#e6e1e5] p-4 bg-[#1c1b1f] rounded-xl border border-[#49454f]">
+        </div>
+
+        <button id="confirm-settle-btn" class="w-full bg-[#d0bcff] text-[#381e72] font-bold py-4 rounded-full transition-transform active:scale-[0.98]">
+            Confirmar Liquidação
+        </button>
     </div>
 </div>
 
@@ -395,7 +405,6 @@
     // SEARCH
     let searchTerm = "";
 
-    // Elementos de Pesquisa e Header
     const searchTrigger = document.getElementById('search-trigger');
     const searchContainer = document.getElementById('search-container');
     const searchInput = document.getElementById('search-input');
@@ -421,7 +430,6 @@
         refreshCurrentView();
     });
 
-    // Elements
     const authScreen = document.getElementById('auth-screen');
     const authLoading = document.getElementById('auth-loading');
     const appContainer = document.getElementById('app-container');
@@ -443,11 +451,81 @@
     const friendModal = document.getElementById('friend-modal');
     const friendForm = document.getElementById('friend-form');
     const closeFriendModalBtn = document.getElementById('close-friend-modal');
-    const friendModalTitle = document.getElementById('friend-modal-title');
     const friendSubmitBtn = document.getElementById('friend-submit-btn');
 
     // Main FAB
     const openContextualModalBtn = document.getElementById('open-contextual-modal');
+
+    // --- LÓGICA DE LONG PRESS & SETTLE ---
+    let pressTimer;
+    let isLongPress = false;
+    let settleData = null;
+
+    window.startLongPress = (e, email, balance) => {
+        isLongPress = false;
+        // Evita abrir modal caso já esteja a zeros (tecnicamente já não aparece, mas é uma proteção extra)
+        if (Math.abs(balance) < 0.01) return;
+
+        pressTimer = setTimeout(() => {
+            isLongPress = true;
+            if(navigator.vibrate) navigator.vibrate(50); // Feedback háptico opcional para mobile
+            openSettleModal(email, balance);
+        }, 500); // 500ms define um "breve instante"
+    };
+
+    window.cancelLongPress = () => {
+        clearTimeout(pressTimer);
+    };
+
+    window.handleCardClick = (e, email) => {
+        // Apenas abre o detalhe do amigo se NÃO foi um long-press
+        if(!isLongPress) openFriendDetails(email);
+    };
+
+    window.openSettleModal = (email, balance) => {
+        const friend = friends.find(f => f.email === email) || { displayName: email.split('@')[0] };
+        const absBal = Math.abs(balance).toFixed(2);
+        const contentDiv = document.getElementById('settle-content');
+
+        if (balance < 0) {
+            // Eu devo ao amigo. Significa que EU tenho de pagar para liquidar a dívida.
+            contentDiv.innerHTML = `Vais registar um pagamento de <strong class="text-[#d0bcff] text-xl block my-2">${absBal}€</strong> a <strong>${friend.displayName}</strong>?`;
+            settleData = { amount: Math.abs(balance), paidByEmail: currentUser.email, friendEmail: email };
+        } else {
+            // O amigo deve-me. Significa que O AMIGO tem de pagar para liquidar.
+            contentDiv.innerHTML = `Vais registar que <strong>${friend.displayName}</strong> te pagou <strong class="text-[#d0bcff] text-xl block my-2">${absBal}€</strong>?`;
+            settleData = { amount: Math.abs(balance), paidByEmail: email, friendEmail: email };
+        }
+        document.getElementById('settle-modal').classList.remove('hidden');
+    };
+
+    window.closeSettleModal = () => {
+        document.getElementById('settle-modal').classList.add('hidden');
+        settleData = null;
+    };
+
+    document.getElementById('confirm-settle-btn').addEventListener('click', async () => {
+        if(!settleData || !currentUser) return;
+
+        const globalExpensesCol = collection(db, 'artifacts', appId, 'shared_expenses');
+        const data = {
+            description: 'Liquidação de Contas',
+            amount: settleData.amount,
+            date: new Date().toISOString().split('T')[0],
+            creatorEmail: currentUser.email,
+            friendEmail: settleData.friendEmail,
+            paidByEmail: settleData.paidByEmail,
+            splitType: 'full', // A compensação não se divide, assume a totalidade do saldo
+            timestamp: Date.now(),
+            involvedUsers: [currentUser.email, settleData.friendEmail]
+        };
+
+        try {
+            await addDoc(globalExpensesCol, data);
+            closeSettleModal();
+            showToast('Contas liquidadas!');
+        } catch(e) { console.error("Erro no Settle:", e); }
+    });
 
     // --- CORE LOGIC ---
     const saveProfile = async (user) => {
@@ -544,7 +622,7 @@
         });
     }
 
-    // --- TOUCH GESTURES (SWIPE TO DELETE) ---
+    // --- TOUCH GESTURES ---
     function getClientX(e) { return e.touches ? e.touches[0].clientX : e.clientX; }
     function getClientY(e) { return e.touches ? e.touches[0].clientY : e.clientY; }
 
@@ -566,7 +644,6 @@
         const diffX = startX - currentX;
         const diffY = Math.abs(startY - currentY);
 
-        // Aborta se o utilizador estiver a fazer scroll verticalmente
         if (diffY > Math.abs(diffX) && e.type !== 'mousemove') return;
 
         if (diffX > 0 && diffX <= 100) {
@@ -587,13 +664,12 @@
         const diffX = startX - currentX;
 
         if (diffX > 45) {
-            el.style.transform = `translateX(-80px)`; // Prende o swipe aberto
-            // Fecha outros painéis que possam estar abertos
+            el.style.transform = `translateX(-80px)`;
             document.querySelectorAll('.swipe-panel').forEach(panel => {
                 if (panel !== el) panel.style.transform = 'translateX(0)';
             });
         } else {
-            el.style.transform = `translateX(0)`; // Volta ao original
+            el.style.transform = `translateX(0)`;
         }
         el.dataset.isSwiping = 'false';
     };
@@ -603,7 +679,6 @@
         currentView = v;
         const fab = document.getElementById('open-contextual-modal');
 
-        // Lógica do Header e barra de navegação inferior
         if (v === 'friend-details') {
             backBtn.classList.remove('hidden');
             searchTrigger.classList.add('hidden');
@@ -611,7 +686,16 @@
             userHeaderProfile.classList.add('hidden');
 
             const friend = friends.find(f => f.email === selectedFriendEmail) || { displayName: selectedFriendEmail.split('@')[0] };
-            viewTitle.textContent = friend.displayName;
+
+            // FOTOGRAFIA NO CABEÇALHO: Modificado para exibir a imagem/ícone + nome em formato amigável
+            viewTitle.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-[#49454f] flex items-center justify-center overflow-hidden border border-[#938f99]/30 shrink-0">
+                        ${friend.photoURL ? `<img src="${friend.photoURL}" class="w-full h-full object-cover">` : `<i class="fas fa-user text-xs"></i>`}
+                    </div>
+                    <span class="text-lg truncate max-w-[150px] sm:max-w-[200px]">${friend.displayName}</span>
+                </div>
+            `;
 
             document.querySelectorAll('.nav-item').forEach(btn => btn.classList.replace('text-[#d0bcff]', 'text-[#938f99]'));
         } else {
@@ -628,7 +712,6 @@
             });
         }
 
-        // FAB Lógica Visual
         if (v === 'account') {
             fab.classList.add('opacity-20', 'pointer-events-none', 'grayscale');
             fab.disabled = true;
@@ -637,7 +720,6 @@
             fab.disabled = false;
         }
 
-        // Roteamento
         if (v === 'activity') renderActivity();
         else if (v === 'friends') renderFriends();
         else if (v === 'account') renderAccount();
@@ -655,6 +737,7 @@
     };
 
     const renderActivity = () => {
+        // Asseguramos que em Activity volta ao texto regular e limpa o innerHTML modificado no detalhe do amigo
         viewTitle.textContent = t('activityTitle');
 
         const filteredExpenses = expenses.filter(exp => {
@@ -677,8 +760,8 @@
         }, {});
 
         let html = '<div class="view-content space-y-3">';
+        let activityCount = 0;
 
-        // Mostra os amigos e os saldos globais como cards de entrada para os Detalhes
         Object.keys(grouped).forEach(friendEmail => {
             const friendExpenses = grouped[friendEmail];
             const friend = friends.find(f => f.email === friendEmail) || { displayName: friendEmail.split('@')[0] };
@@ -688,25 +771,40 @@
                 return sum + (e.paidByEmail === currentUser.email ? amount : -amount);
             }, 0);
 
+            // OCULTAÇÃO (Settle feito): O amigo não aparece na vista de atividade se o saldo for exatamente 0.
+            if (Math.abs(groupBalance) < 0.01) return;
+
+            activityCount++;
             html += `
-                    <div onclick="openFriendDetails('${friendEmail}')"
-                         class="flex items-center gap-4 p-4 bg-[#2b2930] rounded-2xl cursor-pointer active:scale-[0.98] transition-transform shadow-sm">
-                        <div class="w-12 h-12 rounded-full bg-[#49454f] flex items-center justify-center overflow-hidden border border-[#938f99]/20 shrink-0">
+                    <div oncontextmenu="event.preventDefault();"
+                         ontouchstart="startLongPress(event, '${friendEmail}', ${groupBalance})"
+                         ontouchend="cancelLongPress()"
+                         onmousedown="startLongPress(event, '${friendEmail}', ${groupBalance})"
+                         onmouseup="cancelLongPress()"
+                         onmouseleave="cancelLongPress()"
+                         onclick="handleCardClick(event, '${friendEmail}')"
+                         class="flex items-center gap-4 p-4 bg-[#2b2930] rounded-2xl cursor-pointer active:scale-[0.98] transition-transform shadow-sm select-none">
+                        <div class="w-12 h-12 rounded-full bg-[#49454f] flex items-center justify-center overflow-hidden border border-[#938f99]/20 shrink-0 pointer-events-none">
                             ${friend.photoURL ? `<img src="${friend.photoURL}" class="w-full h-full object-cover">` : `<i class="fas fa-user text-lg"></i>`}
                         </div>
-                        <div class="flex-1 min-w-0">
+                        <div class="flex-1 min-w-0 pointer-events-none">
                             <h4 class="font-bold text-base text-[#e6e1e5] truncate">${friend.displayName}</h4>
                             <p class="text-xs text-[#938f99]">${friendExpenses.length} ${friendExpenses.length === 1 ? 'despesa' : 'despesas'}</p>
                         </div>
-                        <div class="text-right shrink-0">
+                        <div class="text-right shrink-0 pointer-events-none">
                             <p class="text-sm font-bold ${groupBalance >= 0 ? 'text-green-400' : 'text-orange-400'}">
                                 ${groupBalance >= 0 ? '+' : ''}${groupBalance.toFixed(2)}€
                             </p>
                         </div>
-                        <i class="fas fa-chevron-right text-[#938f99] text-sm transition-transform ml-2"></i>
                     </div>
                 `;
         });
+
+        // Caso todas as atividades estejam a zeros
+        if(activityCount === 0) {
+            mainContent.innerHTML = `<div class="p-12 text-center opacity-40"><i class="fas fa-check-circle text-5xl mb-4"></i><p>Tudo em dia! Sem atividades pendentes.</p></div>`;
+            return;
+        }
 
         mainContent.innerHTML = html + '</div>';
     };
@@ -714,7 +812,6 @@
     const renderFriendDetailsView = () => {
         let friendExpenses = expenses.filter(e => e.involvedUsers.includes(selectedFriendEmail));
 
-        // Ordenar por data (mais recente no topo)
         friendExpenses.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
         if (friendExpenses.length === 0) {
@@ -722,7 +819,6 @@
             return;
         }
 
-        // Agrupar por Mês
         const groupedByMonth = {};
         friendExpenses.forEach(exp => {
             const d = new Date(exp.date);
@@ -746,27 +842,27 @@
             groupedByMonth[monthKey].forEach(exp => {
                 const iPaid = exp.paidByEmail === currentUser.email;
                 const displayAmount = (exp.splitType === 'equal') ? exp.amount / 2 : exp.amount;
+                // Exibe cores mais subtis se for a despesa do "Liquidar"
+                const isSettle = exp.description === 'Liquidação de Contas';
 
                 html += `
                     <div class="relative overflow-hidden rounded-2xl bg-red-600 shadow-sm mb-2">
-                        <!-- Fundo do botão Eliminar escondido atrás -->
                         <div class="absolute inset-y-0 right-0 w-20 flex flex-col items-center justify-center text-white cursor-pointer active:bg-red-700 transition-colors" onclick="deleteExpense('${exp.id}')">
                             <i class="fas fa-trash mb-1 text-lg"></i>
                             <span class="text-[9px] font-bold uppercase tracking-wider">Apagar</span>
                         </div>
 
-                        <!-- Card Deslizável -->
                         <div class="swipe-panel material-card p-4 flex items-center gap-4 relative bg-[#1c1b1f] border border-[#49454f]/30 transition-transform duration-200 z-10 w-full rounded-2xl"
                              ontouchstart="handleTouchStart(event, this)" onmousedown="handleTouchStart(event, this)"
                              ontouchmove="handleTouchMove(event, this)" onmousemove="handleTouchMove(event, this)"
                              ontouchend="handleTouchEnd(event, this)" onmouseup="handleTouchEnd(event, this)" onmouseleave="handleTouchEnd(event, this)">
 
                             <div class="w-10 h-10 rounded-full bg-[#2b2930] flex items-center justify-center shrink-0 border border-[#49454f]/50">
-                                <i class="fas ${iPaid ? 'fa-arrow-up text-green-400' : 'fa-arrow-down text-orange-400'}"></i>
+                                ${isSettle ? `<i class="fas fa-handshake text-[#938f99]"></i>` : `<i class="fas ${iPaid ? 'fa-arrow-up text-green-400' : 'fa-arrow-down text-orange-400'}"></i>`}
                             </div>
 
                             <div class="flex-1 min-w-0 pointer-events-none">
-                                <h5 class="text-sm font-medium text-[#e6e1e5] truncate">${exp.description}</h5>
+                                <h5 class="text-sm font-medium ${isSettle ? 'text-[#d0bcff]' : 'text-[#e6e1e5]'} truncate">${exp.description}</h5>
                                 <p class="text-[10px] text-[#938f99]">${new Date(exp.date).toLocaleDateString()}</p>
                             </div>
 
@@ -777,10 +873,10 @@
                                 </p>
                             </div>
 
-                            ${exp.creatorEmail === currentUser.email ?
+                            ${exp.creatorEmail === currentUser.email && !isSettle ?
                     `<button onclick="event.stopPropagation(); window.editExpense('${exp.id}')" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-[#938f99] hover:text-[#d0bcff] active:scale-90 transition-transform">
-                                    <i class="fas fa-pen text-sm"></i>
-                                </button>` : ''}
+                                <i class="fas fa-pen text-sm"></i>
+                            </button>` : ''}
                         </div>
                     </div>
                     `;
@@ -880,7 +976,6 @@
         if (currentView === 'friends') {
             openFriendModal();
         } else if (currentView === 'friend-details' && selectedFriendEmail) {
-            // Se já estamos dentro de uma vista de um amigo, preenche automaticamente
             openExpenseModal(selectedFriendEmail);
         } else {
             openExpenseModal();
@@ -894,7 +989,6 @@
         document.getElementById('exp-id').value = "";
         document.getElementById('exp-date').value = new Date().toISOString().split('T')[0];
 
-        // Lógica de pré-seleção
         if (prefillFriendEmail) {
             document.getElementById('exp-friend').value = prefillFriendEmail;
         } else {
@@ -919,7 +1013,7 @@
         try {
             await deleteDoc(doc(db, 'artifacts', appId, 'shared_expenses', id));
             showToast(t('toastDeleted'));
-            refreshCurrentView(); // Atualiza a vista dinamicamente
+            refreshCurrentView();
         } catch (err) {
             console.error("Erro ao apagar despesa:", err);
         }
