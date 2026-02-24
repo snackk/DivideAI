@@ -8,12 +8,12 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    
+
     <link rel="manifest" href="manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="logo.png">
-    
+
     <style>
         :root {
             --md-sys-color-primary: #d0bcff;
@@ -65,613 +65,746 @@
 </head>
 <body class="min-h-screen flex flex-col">
 
-    <!-- Ecrã de Carregamento / Auth -->
-    <div id="auth-screen" class="fixed inset-0 z-50 bg-[#1c1b1f] flex flex-col items-center justify-center p-6 text-center">
-        <div class="mb-8">
-            <div class="w-20 h-20 bg-[#d0bcff] rounded-full flex items-center justify-center mx-auto mb-4">
-                <i class="fas fa-wallet text-[#381e72] text-3xl"></i>
-            </div>
-            <h1 id="welcome-title" class="text-3xl font-bold text-[#e6e1e5]">Dividir Contas</h1>
-            <p id="welcome-subtitle" class="text-[#938f99] mt-2">Gere despesas com amigos de forma simples</p>
+<!-- Ecrã de Carregamento / Auth -->
+<div id="auth-screen" class="fixed inset-0 z-50 bg-[#1c1b1f] flex flex-col items-center justify-center p-6 text-center">
+    <div class="mb-8">
+        <div class="w-20 h-20 bg-[#d0bcff] rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-wallet text-[#381e72] text-3xl"></i>
         </div>
-        
-        <div id="auth-loading" class="hidden mb-4">
-            <div class="inline-block w-8 h-8 border-4 border-[#d0bcff] border-t-transparent rounded-full animate-spin"></div>
-            <p id="auth-loading-text" class="text-sm mt-2 text-[#938f99]">A autenticar...</p>
-        </div>
-
-        <button id="login-btn" class="w-full max-w-xs bg-white text-black font-medium py-4 rounded-full flex items-center justify-center gap-3 transition-all hover:bg-gray-100 shadow-lg">
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" alt="Google">
-            <span id="login-text">Entrar com o Google</span>
-        </button>
-        <p id="auth-status" class="mt-4 text-xs text-[#938f99]"></p>
+        <h1 id="welcome-title" class="text-3xl font-bold text-[#e6e1e5]">Dividir Contas</h1>
+        <p id="welcome-subtitle" class="text-[#938f99] mt-2">Gere despesas com amigos de forma simples</p>
     </div>
 
-    <!-- App Principal -->
-    <div id="app-container" class="hidden flex-col h-screen max-w-md mx-auto w-full relative">
-        
-        <header class="p-4 flex items-center justify-between sticky top-0 bg-[#1c1b1f] z-10">
+    <div id="auth-loading" class="hidden mb-4">
+        <div class="inline-block w-8 h-8 border-4 border-[#d0bcff] border-t-transparent rounded-full animate-spin"></div>
+        <p id="auth-loading-text" class="text-sm mt-2 text-[#938f99]">A autenticar...</p>
+    </div>
+
+    <button id="login-btn" class="w-full max-w-xs bg-white text-black font-medium py-4 rounded-full flex items-center justify-center gap-3 transition-all hover:bg-gray-100 shadow-lg">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" alt="Google">
+        <span id="login-text">Entrar com o Google</span>
+    </button>
+    <p id="auth-status" class="mt-4 text-xs text-[#938f99]"></p>
+</div>
+
+<!-- App Principal -->
+<div id="app-container" class="hidden flex-col h-screen max-w-md mx-auto w-full relative">
+
+    <header class="p-4 flex items-center justify-between sticky top-0 bg-[#1c1b1f] z-10 shadow-sm">
+        <div class="flex items-center gap-2">
+            <button id="back-btn" class="hidden text-[#e6e1e5] p-2 -ml-2 rounded-full hover:bg-[#2b2930] transition-colors" onclick="goBack()">
+                <i class="fas fa-arrow-left text-lg"></i>
+            </button>
             <h2 id="view-title" class="text-xl font-medium">Atividade</h2>
-            <div class="flex gap-4 items-center flex-1 justify-end">
-                <div id="search-container" class="flex items-center bg-[#2b2930] rounded-full px-3 py-1 hidden w-full max-w-[200px] transition-all">
-                    <input type="text" id="search-input" placeholder="Procurar..." 
-                           class="bg-transparent border-none outline-none text-xs w-full text-[#e6e1e5] placeholder-[#938f99]">
-                    <button onclick="closeSearch()"><i class="fas fa-times text-[#938f99] text-xs"></i></button>
-                </div>
-                <button id="search-trigger" class="text-[#938f99]"><i class="fas fa-search text-xl"></i></button>
-                
-                <div id="user-header-profile" class="w-8 h-8 rounded-full bg-[#49454f] overflow-hidden border border-[#938f99] cursor-pointer" onclick="switchView('account')">
-                    <i class="fas fa-user text-xs flex items-center justify-center h-full"></i>
-                </div>
-            </div>
-        </header>
-
-        <main id="main-content" class="flex-1 overflow-y-auto p-4 space-y-4 pb-24">
-            <!-- Vistas dinâmicas aqui -->
-        </main>
-
-        <!-- Navegação Inferior -->
-        <nav class="fixed bottom-0 left-0 right-0 bg-[#2b2930] border-t border-[#49454f] flex justify-between items-center px-4 safe-area-bottom max-w-md mx-auto z-50 h-20 shadow-[0_-4px_10px_rgba(0,0,0,0.3)]">
-            
-            <button onclick="switchView('activity')" class="nav-item flex flex-col items-center justify-center text-[#d0bcff] flex-1 transition-all active:opacity-50">
-                <i class="fas fa-clock text-xl mb-1"></i>
-                <span id="nav-activity" class="text-[10px] font-medium">Atividade</span>
-            </button>
-        
-            <button onclick="switchView('friends')" class="nav-item flex flex-col items-center justify-center text-[#938f99] flex-1 transition-all active:opacity-50">
-                <i class="fas fa-users text-xl mb-1"></i>
-                <span id="nav-friends" class="text-[10px] font-medium">Amigos</span>
-            </button>
-            
-            <div class="flex-1 flex justify-center items-center -mt-8">
-                <button id="open-contextual-modal" class="w-14 h-14 bg-[#d0bcff] rounded-2xl flex items-center justify-center text-[#381e72] shadow-2xl transition-transform active:scale-90 border-4 border-[#1c1b1f]">
-                    <i class="fas fa-plus text-2xl"></i>
-                </button>
-            </div>
-        
-            <button onclick="switchView('groups')" class="nav-item flex flex-col items-center justify-center text-[#938f99] flex-1 transition-all active:opacity-50">
-                <i class="fas fa-layer-group text-xl mb-1"></i>
-                <span id="nav-groups" class="text-[10px] font-medium">Grupos</span>
-            </button>
-        
-            <button onclick="switchView('account')" class="nav-item flex flex-col items-center justify-center text-[#938f99] flex-1 transition-all active:opacity-50">
-                <i class="fas fa-user-circle text-xl mb-1"></i>
-                <span id="nav-account" class="text-[10px] font-medium">Conta</span>
-            </button>
-        </nav>
-
-    </div>
-
-    <!-- Modal para Nova/Editar Despesa -->
-    <div id="expense-modal" class="fixed inset-0 z-[60] bg-black/60 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
-        <div class="bg-[#2b2930] w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 view-content">
-            <div class="flex justify-between items-center mb-6">
-                <h3 id="modal-title" class="text-xl font-bold">Nova Despesa</h3>
-                <button id="close-expense-modal" class="text-[#938f99] p-2"><i class="fas fa-times"></i></button>
-            </div>
-            
-            <form id="expense-form" class="space-y-4">
-                <input type="hidden" id="exp-id">
-                
-                <div>
-                    <label id="lbl-desc" class="block text-xs text-[#d0bcff] mb-1 ml-1">Descrição</label>
-                    <input type="text" id="exp-desc" required placeholder="..." 
-                           class="w-full bg-[#1c1b1f] border-b border-[#49454f] p-3 focus:border-[#d0bcff] outline-none rounded-t-lg">
-                </div>
-                
-                <div class="flex gap-4">
-                    <div class="flex-1">
-                        <label id="lbl-amount" class="block text-xs text-[#d0bcff] mb-1 ml-1">Valor (€)</label>
-                        <input type="number" step="0.01" id="exp-amount" required placeholder="0.00" 
-                               class="w-full bg-[#1c1b1f] border-b border-[#49454f] p-3 focus:border-[#d0bcff] outline-none">
-                    </div>
-                    <div class="flex-1">
-                        <label id="lbl-date" class="block text-xs text-[#d0bcff] mb-1 ml-1">Data</label>
-                        <input type="date" id="exp-date" required
-                               class="w-full bg-[#1c1b1f] border-b border-[#49454f] p-3 focus:border-[#d0bcff] outline-none">
-                    </div>
-                </div>
-
-                <div class="flex gap-4">
-                    <div class="flex-1">
-                        <label id="lbl-friend" class="block text-xs text-[#d0bcff] mb-1 ml-1">Com quem?</label>
-                        <select id="exp-friend" required class="w-full bg-[#1c1b1f] border-b border-[#49454f] p-3 focus:border-[#d0bcff] outline-none">
-                            <option value="">...</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label id="lbl-paid-by" class="block text-xs text-[#d0bcff] mb-1 ml-1">Pago por</label>
-                        <select id="exp-paid-by" required class="w-full bg-[#1c1b1f] border-b border-[#49454f] p-3 focus:border-[#d0bcff] outline-none">
-                            <option value="me">Eu</option>
-                            <option value="friend">Amigo</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label id="lbl-split" class="block text-xs text-[#d0bcff] mb-1 ml-1">Divisão</label>
-                        <select id="exp-split-type" required class="w-full bg-[#1c1b1f] border-b border-[#49454f] p-3 focus:border-[#d0bcff] outline-none">
-                            <option value="equal">50/50</option>
-                            <option value="full">100%</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div id="split-info" class="bg-[#1c1b1f] p-4 rounded-xl text-sm text-[#938f99] mt-4 italic"></div>
-
-                <button type="submit" id="submit-btn" class="w-full bg-[#d0bcff] text-[#381e72] font-bold py-4 rounded-full mt-6">
-                    Guardar
-                </button>
-            </form>
         </div>
-    </div>
 
-    <!-- Modal para Adicionar Amigo -->
-    <div id="friend-modal" class="fixed inset-0 z-[60] bg-black/60 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
-        <div class="bg-[#2b2930] w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 view-content">
-            <div class="flex justify-between items-center mb-6">
-                <h3 id="friend-modal-title" class="text-xl font-bold">Adicionar Amigo</h3>
-                <button id="close-friend-modal" class="text-[#938f99] p-2"><i class="fas fa-times"></i></button>
+        <div class="flex gap-4 items-center flex-1 justify-end">
+            <div id="search-container" class="flex items-center bg-[#2b2930] rounded-full px-3 py-1 hidden w-full max-w-[200px] transition-all">
+                <input type="text" id="search-input" placeholder="Procurar..."
+                       class="bg-transparent border-none outline-none text-xs w-full text-[#e6e1e5] placeholder-[#938f99]">
+                <button onclick="closeSearch()"><i class="fas fa-times text-[#938f99] text-xs"></i></button>
             </div>
-            
-            <form id="friend-form" class="space-y-4">
-                <div>
-                    <label id="lbl-friend-email" class="block text-xs text-[#d0bcff] mb-1 ml-1">E-mail do Google</label>
-                    <input type="email" id="add-friend-email" required placeholder="exemplo@gmail.com" 
-                           class="w-full bg-[#1c1b1f] border-b border-[#49454f] p-3 focus:border-[#d0bcff] outline-none rounded-t-lg">
-                </div>
-                <div>
-                    <label id="lbl-friend-name" class="block text-xs text-[#d0bcff] mb-1 ml-1">Nome (Opcional)</label>
-                    <input type="text" id="add-friend-custom-name" placeholder="Como o identificas?" 
+            <button id="search-trigger" class="text-[#938f99]"><i class="fas fa-search text-xl"></i></button>
+
+            <div id="user-header-profile" class="w-8 h-8 rounded-full bg-[#49454f] overflow-hidden border border-[#938f99] cursor-pointer" onclick="switchView('account')">
+                <i class="fas fa-user text-xs flex items-center justify-center h-full"></i>
+            </div>
+        </div>
+    </header>
+
+    <main id="main-content" class="flex-1 overflow-y-auto p-4 space-y-4 pb-24">
+        <!-- Vistas dinâmicas aqui -->
+    </main>
+
+    <!-- Navegação Inferior -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-[#2b2930] border-t border-[#49454f] flex justify-between items-center px-4 safe-area-bottom max-w-md mx-auto z-50 h-20 shadow-[0_-4px_10px_rgba(0,0,0,0.3)]">
+
+        <button onclick="switchView('activity')" class="nav-item flex flex-col items-center justify-center text-[#d0bcff] flex-1 transition-all active:opacity-50" data-view="activity">
+            <i class="fas fa-clock text-xl mb-1"></i>
+            <span id="nav-activity" class="text-[10px] font-medium">Atividade</span>
+        </button>
+
+        <button onclick="switchView('friends')" class="nav-item flex flex-col items-center justify-center text-[#938f99] flex-1 transition-all active:opacity-50" data-view="friends">
+            <i class="fas fa-users text-xl mb-1"></i>
+            <span id="nav-friends" class="text-[10px] font-medium">Amigos</span>
+        </button>
+
+        <div class="flex-1 flex justify-center items-center -mt-8">
+            <button id="open-contextual-modal" class="w-14 h-14 bg-[#d0bcff] rounded-2xl flex items-center justify-center text-[#381e72] shadow-2xl transition-transform active:scale-90 border-4 border-[#1c1b1f]">
+                <i class="fas fa-plus text-2xl"></i>
+            </button>
+        </div>
+
+        <button onclick="switchView('groups')" class="nav-item flex flex-col items-center justify-center text-[#938f99] flex-1 transition-all active:opacity-50" data-view="groups">
+            <i class="fas fa-layer-group text-xl mb-1"></i>
+            <span id="nav-groups" class="text-[10px] font-medium">Grupos</span>
+        </button>
+
+        <button onclick="switchView('account')" class="nav-item flex flex-col items-center justify-center text-[#938f99] flex-1 transition-all active:opacity-50" data-view="account">
+            <i class="fas fa-user-circle text-xl mb-1"></i>
+            <span id="nav-account" class="text-[10px] font-medium">Conta</span>
+        </button>
+    </nav>
+
+</div>
+
+<!-- Modal para Nova/Editar Despesa -->
+<div id="expense-modal" class="fixed inset-0 z-[60] bg-black/60 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-[#2b2930] w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 view-content">
+        <div class="flex justify-between items-center mb-6">
+            <h3 id="modal-title" class="text-xl font-bold">Nova Despesa</h3>
+            <button id="close-expense-modal" class="text-[#938f99] p-2"><i class="fas fa-times"></i></button>
+        </div>
+
+        <form id="expense-form" class="space-y-4">
+            <input type="hidden" id="exp-id">
+
+            <div>
+                <label id="lbl-desc" class="block text-xs text-[#d0bcff] mb-1 ml-1">Descrição</label>
+                <input type="text" id="exp-desc" required placeholder="..."
+                       class="w-full bg-[#1c1b1f] border-b border-[#49454f] p-3 focus:border-[#d0bcff] outline-none rounded-t-lg">
+            </div>
+
+            <div class="flex gap-4">
+                <div class="flex-1">
+                    <label id="lbl-amount" class="block text-xs text-[#d0bcff] mb-1 ml-1">Valor (€)</label>
+                    <input type="number" step="0.01" id="exp-amount" required placeholder="0.00"
                            class="w-full bg-[#1c1b1f] border-b border-[#49454f] p-3 focus:border-[#d0bcff] outline-none">
                 </div>
-                
-                <button type="submit" id="friend-submit-btn" class="w-full bg-[#d0bcff] text-[#381e72] font-bold py-4 rounded-full mt-6 uppercase tracking-wider text-xs">
-                    Adicionar à Lista
-                </button>
-            </form>
+                <div class="flex-1">
+                    <label id="lbl-date" class="block text-xs text-[#d0bcff] mb-1 ml-1">Data</label>
+                    <input type="date" id="exp-date" required
+                           class="w-full bg-[#1c1b1f] border-b border-[#49454f] p-3 focus:border-[#d0bcff] outline-none">
+                </div>
+            </div>
+
+            <div class="flex gap-4">
+                <div class="flex-1">
+                    <label id="lbl-friend" class="block text-xs text-[#d0bcff] mb-1 ml-1">Com quem?</label>
+                    <select id="exp-friend" required class="w-full bg-[#1c1b1f] border-b border-[#49454f] p-3 focus:border-[#d0bcff] outline-none">
+                        <option value="">...</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label id="lbl-paid-by" class="block text-xs text-[#d0bcff] mb-1 ml-1">Pago por</label>
+                    <select id="exp-paid-by" required class="w-full bg-[#1c1b1f] border-b border-[#49454f] p-3 focus:border-[#d0bcff] outline-none">
+                        <option value="me">Eu</option>
+                        <option value="friend">Amigo</option>
+                    </select>
+                </div>
+                <div>
+                    <label id="lbl-split" class="block text-xs text-[#d0bcff] mb-1 ml-1">Divisão</label>
+                    <select id="exp-split-type" required class="w-full bg-[#1c1b1f] border-b border-[#49454f] p-3 focus:border-[#d0bcff] outline-none">
+                        <option value="equal">50/50</option>
+                        <option value="full">100%</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="split-info" class="bg-[#1c1b1f] p-4 rounded-xl text-sm text-[#938f99] mt-4 italic"></div>
+
+            <button type="submit" id="submit-btn" class="w-full bg-[#d0bcff] text-[#381e72] font-bold py-4 rounded-full mt-6">
+                Guardar
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Modal para Adicionar Amigo -->
+<div id="friend-modal" class="fixed inset-0 z-[60] bg-black/60 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-[#2b2930] w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 view-content">
+        <div class="flex justify-between items-center mb-6">
+            <h3 id="friend-modal-title" class="text-xl font-bold">Adicionar Amigo</h3>
+            <button id="close-friend-modal" class="text-[#938f99] p-2"><i class="fas fa-times"></i></button>
         </div>
+
+        <form id="friend-form" class="space-y-4">
+            <div>
+                <label id="lbl-friend-email" class="block text-xs text-[#d0bcff] mb-1 ml-1">E-mail do Google</label>
+                <input type="email" id="add-friend-email" required placeholder="exemplo@gmail.com"
+                       class="w-full bg-[#1c1b1f] border-b border-[#49454f] p-3 focus:border-[#d0bcff] outline-none rounded-t-lg">
+            </div>
+            <div>
+                <label id="lbl-friend-name" class="block text-xs text-[#d0bcff] mb-1 ml-1">Nome (Opcional)</label>
+                <input type="text" id="add-friend-custom-name" placeholder="Como o identificas?"
+                       class="w-full bg-[#1c1b1f] border-b border-[#49454f] p-3 focus:border-[#d0bcff] outline-none">
+            </div>
+
+            <button type="submit" id="friend-submit-btn" class="w-full bg-[#d0bcff] text-[#381e72] font-bold py-4 rounded-full mt-6 uppercase tracking-wider text-xs">
+                Adicionar à Lista
+            </button>
+        </form>
     </div>
+</div>
 
-    <div id="toast" class="fixed bottom-24 left-1/2 -translate-x-1/2 bg-[#49454f] text-white px-6 py-3 rounded-full text-sm shadow-2xl transition-opacity opacity-0 pointer-events-none z-[100]">
-        Ação concluída
-    </div>
+<div id="toast" class="fixed bottom-24 left-1/2 -translate-x-1/2 bg-[#49454f] text-white px-6 py-3 rounded-full text-sm shadow-2xl transition-opacity opacity-0 pointer-events-none z-[100]">
+    Ação concluída
+</div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signInWithCustomToken, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, getDoc, getDocs, addDoc, onSnapshot, updateDoc, deleteDoc, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signInWithCustomToken, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, collection, doc, setDoc, getDoc, getDocs, addDoc, onSnapshot, updateDoc, deleteDoc, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // --- TRADUÇÕES ---
-        const i18n = {
-            pt: {
-                welcomeTitle: "Dividir Contas",
-                welcomeSubtitle: "Gere despesas com amigos de forma simples",
-                loginText: "Entrar com o Google",
-                authLoading: "A autenticar...",
-                navActivity: "Atividade",
-                navFriends: "Amigos",
-                navGroups: "Grupos",
-                navAccount: "Conta",
-                modalNew: "Nova Despesa",
-                modalEdit: "Editar Despesa",
-                modalAddFriend: "Adicionar Amigo",
-                lblDesc: "Descrição",
-                lblAmount: "Valor (€)",
-                lblDate: "Data",
-                lblFriend: "Amigo",
-                lblFriendEmail: "E-mail do Google",
-                lblFriendName: "Nome (Opcional)",
-                lblPaidBy: "Pago por",
-                lblSplit: "Divisão",
-                me: "Eu",
-                friend: "Amigo",
-                splitEqual: "50/50 (Dividir)",
-                splitFull: "100% (Não dividir)",
-                save: "Guardar",
-                update: "Atualizar",
-                addToList: "Adicionar à Lista",
-                activityTitle: "Atividade Recente",
-                friendsTitle: "Amigos",
-                accountTitle: "Conta",
-                noExpenses: "Sem despesas registadas.",
-                youPaid: "Tu pagaste",
-                friendPaid: " pagou",
-                youReceive: "Recebes ",
-                youOwe: "Deves ",
-                totalToReceive: "A receber",
-                totalToPay: "A pagar",
-                settled: "Tudo liquidado",
-                owesYou: "Deve-te ",
-                youOweFriend: "Deves-lhe ",
-                syncActive: "Cloud Sync",
-                syncDesc: "Dados no Firebase",
-                logout: "Sair",
-                langSelect: "Idioma",
-                toastCreated: "Despesa criada!",
-                toastUpdated: "Despesa atualizada!",
-                addFriendPlaceholder: "E-mail do amigo...",
-                friendNotFound: "Perfil Google não encontrado. Usando nome personalizado.",
-                friendAlreadyExists: "Este amigo já está na tua lista.",
-                friendAdded: "Amigo adicionado!",
-                noFriends: "Ainda não adicionaste amigos.",
-                groupsComingSoon: "Gestão de grupos em breve.",
-                splitInfoMeEqual: "Tu pagas e o amigo deve-te metade.",
-                splitInfoMeFull: "Tu pagas e o amigo deve-te o valor total.",
-                splitInfoFriendEqual: "O amigo paga e tu deves-lhe metade.",
-                splitInfoFriendFull: "O amigo paga e tu deves-lhe o valor total."
-            },
-            en: {
-                welcomeTitle: "Split Costs",
-                welcomeSubtitle: "Simple expense sharing",
-                loginText: "Sign in with Google",
-                authLoading: "Loading...",
-                navActivity: "Activity",
-                navFriends: "Friends",
-                navGroups: "Groups",
-                navAccount: "Account",
-                modalNew: "New Expense",
-                modalEdit: "Edit Expense",
-                modalAddFriend: "Add Friend",
-                lblDesc: "Description",
-                lblAmount: "Amount (€)",
-                lblDate: "Date",
-                lblFriend: "Friend",
-                lblFriendEmail: "Google Email",
-                lblFriendName: "Name (Optional)",
-                lblPaidBy: "Paid by",
-                lblSplit: "Split",
-                me: "Me",
-                friend: "Friend",
-                splitEqual: "50/50 (Split)",
-                splitFull: "100% (Full)",
-                save: "Save",
-                update: "Update",
-                addToList: "Add to List",
-                activityTitle: "Recent Activity",
-                friendsTitle: "Friends",
-                accountTitle: "Account",
-                noExpenses: "No expenses recorded.",
-                youPaid: "You paid",
-                friendPaid: " paid",
-                youReceive: "You receive ",
-                youOwe: "You owe ",
-                totalToReceive: "To receive",
-                totalToPay: "To pay",
-                settled: "All settled",
-                owesYou: "Owes you ",
-                youOweFriend: "You owe them ",
-                syncActive: "Cloud Sync",
-                syncDesc: "Safe on Firebase",
-                logout: "Log out",
-                langSelect: "Language",
-                toastCreated: "Expense created!",
-                toastUpdated: "Expense updated!",
-                addFriendPlaceholder: "Friend's email...",
-                friendNotFound: "Google profile not found. Using custom name.",
-                friendAlreadyExists: "Friend already in list.",
-                friendAdded: "Friend added!",
-                noFriends: "No friends added yet.",
-                groupsComingSoon: "Groups coming soon.",
-                splitInfoMeEqual: "You pay and friend owes half.",
-                splitInfoMeFull: "You pay and friend owes full.",
-                splitInfoFriendEqual: "Friend pays and you owe half.",
-                splitInfoFriendFull: "Friend pays and you owe full."
-            }
-        };     
+    // --- TRADUÇÕES ---
+    const i18n = {
+        pt: {
+            welcomeTitle: "Dividir Contas",
+            welcomeSubtitle: "Gere despesas com amigos de forma simples",
+            loginText: "Entrar com o Google",
+            authLoading: "A autenticar...",
+            navActivity: "Atividade",
+            navFriends: "Amigos",
+            navGroups: "Grupos",
+            navAccount: "Conta",
+            modalNew: "Nova Despesa",
+            modalEdit: "Editar Despesa",
+            modalAddFriend: "Adicionar Amigo",
+            lblDesc: "Descrição",
+            lblAmount: "Valor (€)",
+            lblDate: "Data",
+            lblFriend: "Amigo",
+            lblFriendEmail: "E-mail do Google",
+            lblFriendName: "Nome (Opcional)",
+            lblPaidBy: "Pago por",
+            lblSplit: "Divisão",
+            me: "Eu",
+            friend: "Amigo",
+            splitEqual: "50/50 (Dividir)",
+            splitFull: "100% (Não dividir)",
+            save: "Guardar",
+            update: "Atualizar",
+            addToList: "Adicionar à Lista",
+            activityTitle: "Atividade Recente",
+            friendsTitle: "Amigos",
+            accountTitle: "Conta",
+            noExpenses: "Sem despesas registadas.",
+            youPaid: "Tu pagaste",
+            friendPaid: " pagou",
+            youReceive: "Recebes ",
+            youOwe: "Deves ",
+            totalToReceive: "A receber",
+            totalToPay: "A pagar",
+            settled: "Tudo liquidado",
+            owesYou: "Deve-te ",
+            youOweFriend: "Deves-lhe ",
+            syncActive: "Cloud Sync",
+            syncDesc: "Dados no Firebase",
+            logout: "Sair",
+            langSelect: "Idioma",
+            toastCreated: "Despesa criada!",
+            toastUpdated: "Despesa atualizada!",
+            toastDeleted: "Despesa apagada!",
+            addFriendPlaceholder: "E-mail do amigo...",
+            friendNotFound: "Perfil Google não encontrado. Usando nome personalizado.",
+            friendAlreadyExists: "Este amigo já está na tua lista.",
+            friendAdded: "Amigo adicionado!",
+            noFriends: "Ainda não adicionaste amigos.",
+            groupsComingSoon: "Gestão de grupos em breve.",
+            splitInfoMeEqual: "Tu pagas e o amigo deve-te metade.",
+            splitInfoMeFull: "Tu pagas e o amigo deve-te o valor total.",
+            splitInfoFriendEqual: "O amigo paga e tu deves-lhe metade.",
+            splitInfoFriendFull: "O amigo paga e tu deves-lhe o valor total."
+        },
+        en: {
+            welcomeTitle: "Split Costs",
+            welcomeSubtitle: "Simple expense sharing",
+            loginText: "Sign in with Google",
+            authLoading: "Loading...",
+            navActivity: "Activity",
+            navFriends: "Friends",
+            navGroups: "Groups",
+            navAccount: "Account",
+            modalNew: "New Expense",
+            modalEdit: "Edit Expense",
+            modalAddFriend: "Add Friend",
+            lblDesc: "Description",
+            lblAmount: "Amount (€)",
+            lblDate: "Date",
+            lblFriend: "Friend",
+            lblFriendEmail: "Google Email",
+            lblFriendName: "Name (Optional)",
+            lblPaidBy: "Paid by",
+            lblSplit: "Split",
+            me: "Me",
+            friend: "Friend",
+            splitEqual: "50/50 (Split)",
+            splitFull: "100% (Full)",
+            save: "Save",
+            update: "Update",
+            addToList: "Add to List",
+            activityTitle: "Recent Activity",
+            friendsTitle: "Friends",
+            accountTitle: "Account",
+            noExpenses: "No expenses recorded.",
+            youPaid: "You paid",
+            friendPaid: " paid",
+            youReceive: "You receive ",
+            youOwe: "You owe ",
+            totalToReceive: "To receive",
+            totalToPay: "To pay",
+            settled: "All settled",
+            owesYou: "Owes you ",
+            youOweFriend: "You owe them ",
+            syncActive: "Cloud Sync",
+            syncDesc: "Safe on Firebase",
+            logout: "Log out",
+            langSelect: "Language",
+            toastCreated: "Expense created!",
+            toastUpdated: "Expense updated!",
+            toastDeleted: "Expense deleted!",
+            addFriendPlaceholder: "Friend's email...",
+            friendNotFound: "Google profile not found. Using custom name.",
+            friendAlreadyExists: "Friend already in list.",
+            friendAdded: "Friend added!",
+            noFriends: "No friends added yet.",
+            groupsComingSoon: "Groups coming soon.",
+            splitInfoMeEqual: "You pay and friend owes half.",
+            splitInfoMeFull: "You pay and friend owes full.",
+            splitInfoFriendEqual: "Friend pays and you owe half.",
+            splitInfoFriendFull: "Friend pays and you owe full."
+        }
+    };
 
-        let currentLang = 'pt';
-        function t(key) { return i18n[currentLang][key] || key; }
+    let currentLang = 'pt';
+    function t(key) { return i18n[currentLang][key] || key; }
 
-        // --- FIREBASE ---
-        const firebaseConfig = {
-          apiKey: "AIzaSyB9lbE5DfWqQOOw9oR2UEyWO1K6ntuNCWI",
-          authDomain: "test-5d868.firebaseapp.com",
-          projectId: "test-5d868",
-          storageBucket: "test-5d868.firebasestorage.app",
-          messagingSenderId: "980585676684",
-          appId: "1:980585676684:web:07702697c10b5fe319a0a9"
-        };
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const googleProvider = new GoogleAuthProvider();
-        const appId = "DivideAI";
+    // --- FIREBASE ---
+    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+        apiKey: "AIzaSyB9lbE5DfWqQOOw9oR2UEyWO1K6ntuNCWI",
+        authDomain: "test-5d868.firebaseapp.com",
+        projectId: "test-5d868",
+        storageBucket: "test-5d868.firebasestorage.app",
+        messagingSenderId: "980585676684",
+        appId: "1:980585676684:web:07702697c10b5fe319a0a9"
+    };
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const appId = typeof __app_id !== 'undefined' ? __app_id : "DivideAI";
 
-        let currentUser = null;
-        let expenses = [];
-        let friends = [];
-        let currentView = 'activity';
+    let currentUser = null;
+    let expenses = [];
+    let friends = [];
+    let currentView = 'activity';
+    let selectedFriendEmail = null;
 
-        // SEARCH
-        let searchTerm = "";
+    // SEARCH
+    let searchTerm = "";
 
-        // Elementos de Pesquisa
-        const searchTrigger = document.getElementById('search-trigger');
-        const searchContainer = document.getElementById('search-container');
-        const searchInput = document.getElementById('search-input');
+    // Elementos de Pesquisa e Header
+    const searchTrigger = document.getElementById('search-trigger');
+    const searchContainer = document.getElementById('search-container');
+    const searchInput = document.getElementById('search-input');
+    const backBtn = document.getElementById('back-btn');
+    const userHeaderProfile = document.getElementById('user-header-profile');
 
-        searchTrigger.addEventListener('click', () => {
-            searchTrigger.classList.add('hidden');
-            searchContainer.classList.remove('hidden');
-            searchInput.focus();
-        });
+    searchTrigger.addEventListener('click', () => {
+        searchTrigger.classList.add('hidden');
+        searchContainer.classList.remove('hidden');
+        searchInput.focus();
+    });
 
-        window.closeSearch = () => {
-            searchTerm = "";
-            searchInput.value = "";
-            searchContainer.classList.add('hidden');
-            searchTrigger.classList.remove('hidden');
-            refreshCurrentView();
-        };
+    window.closeSearch = () => {
+        searchTerm = "";
+        searchInput.value = "";
+        searchContainer.classList.add('hidden');
+        if(currentView !== 'friend-details') searchTrigger.classList.remove('hidden');
+        refreshCurrentView();
+    };
 
-        searchInput.addEventListener('input', (e) => {
-            searchTerm = e.target.value.toLowerCase();
-            refreshCurrentView();
-        });           
+    searchInput.addEventListener('input', (e) => {
+        searchTerm = e.target.value.toLowerCase();
+        refreshCurrentView();
+    });
 
-        // Elements
-        const authScreen = document.getElementById('auth-screen');
-        const authLoading = document.getElementById('auth-loading');
-        const appContainer = document.getElementById('app-container');
-        const mainContent = document.getElementById('main-content');
-        const viewTitle = document.getElementById('view-title');
-        const userHeaderProfile = document.getElementById('user-header-profile');
-        
-        // Expense Modal Elements
-        const expenseModal = document.getElementById('expense-modal');
-        const expenseForm = document.getElementById('expense-form');
-        const friendSelect = document.getElementById('exp-friend');
-        const modalTitle = document.getElementById('modal-title');
-        const submitBtn = document.getElementById('submit-btn');
-        const closeModalBtn = document.getElementById('close-expense-modal');
-        const paidBySelect = document.getElementById('exp-paid-by');
-        const splitTypeSelect = document.getElementById('exp-split-type');
-        const splitInfo = document.getElementById('split-info');
+    // Elements
+    const authScreen = document.getElementById('auth-screen');
+    const authLoading = document.getElementById('auth-loading');
+    const appContainer = document.getElementById('app-container');
+    const mainContent = document.getElementById('main-content');
+    const viewTitle = document.getElementById('view-title');
 
-        // Friend Modal Elements
-        const friendModal = document.getElementById('friend-modal');
-        const friendForm = document.getElementById('friend-form');
-        const closeFriendModalBtn = document.getElementById('close-friend-modal');
-        const friendModalTitle = document.getElementById('friend-modal-title');
-        const friendSubmitBtn = document.getElementById('friend-submit-btn');
+    // Expense Modal Elements
+    const expenseModal = document.getElementById('expense-modal');
+    const expenseForm = document.getElementById('expense-form');
+    const friendSelect = document.getElementById('exp-friend');
+    const modalTitle = document.getElementById('modal-title');
+    const submitBtn = document.getElementById('submit-btn');
+    const closeModalBtn = document.getElementById('close-expense-modal');
+    const paidBySelect = document.getElementById('exp-paid-by');
+    const splitTypeSelect = document.getElementById('exp-split-type');
+    const splitInfo = document.getElementById('split-info');
 
-        // Main FAB
-        const openContextualModalBtn = document.getElementById('open-contextual-modal');
+    // Friend Modal Elements
+    const friendModal = document.getElementById('friend-modal');
+    const friendForm = document.getElementById('friend-form');
+    const closeFriendModalBtn = document.getElementById('close-friend-modal');
+    const friendModalTitle = document.getElementById('friend-modal-title');
+    const friendSubmitBtn = document.getElementById('friend-submit-btn');
 
-        // --- CORE ---
-        const saveProfile = async (user) => {
-            if (!user || !user.email) return;
-            try {
-                const profileRef = doc(db, 'artifacts', appId, 'public', 'data', 'profiles', user.email.replace(/\./g, '_'));
-                await setDoc(profileRef, {
-                    uid: user.uid,
-                    email: user.email,
-                    displayName: user.displayName,
-                    photoURL: user.photoURL,
-                    updatedAt: Date.now()
-                }, { merge: true });
-            } catch (err) {
-                console.error("Profile sync error:", err);
-            }
-        };
+    // Main FAB
+    const openContextualModalBtn = document.getElementById('open-contextual-modal');
 
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                currentUser = user;
-                await saveProfile(user);
-                authScreen.classList.add('hidden');
-                appContainer.classList.remove('hidden');
-                if (user.photoURL) userHeaderProfile.innerHTML = `<img src="${user.photoURL}" class="w-full h-full object-cover">`;
-                initApp();
+    // --- CORE LOGIC ---
+    const saveProfile = async (user) => {
+        if (!user || !user.email) return;
+        try {
+            const profileRef = doc(db, 'artifacts', appId, 'public', 'data', 'profiles', user.email.replace(/\./g, '_'));
+            await setDoc(profileRef, {
+                uid: user.uid,
+                email: user.email,
+                displayName: user.displayName,
+                photoURL: user.photoURL,
+                updatedAt: Date.now()
+            }, { merge: true });
+        } catch (err) {
+            console.error("Profile sync error:", err);
+        }
+    };
+
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            currentUser = user;
+            await saveProfile(user);
+            authScreen.classList.add('hidden');
+            appContainer.classList.remove('hidden');
+            if (user.photoURL) userHeaderProfile.innerHTML = `<img src="${user.photoURL}" class="w-full h-full object-cover">`;
+            initApp();
+        } else {
+            currentUser = null;
+            authScreen.classList.remove('hidden');
+            appContainer.classList.add('hidden');
+        }
+    });
+
+    const handleLogin = async () => {
+        const lBtn = document.getElementById('login-btn');
+        lBtn.classList.add('hidden');
+        authLoading.classList.remove('hidden');
+        try {
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                await signInWithCustomToken(auth, __initial_auth_token);
             } else {
-                currentUser = null;
-                authScreen.classList.remove('hidden');
-                appContainer.classList.add('hidden');
+                await signInWithPopup(auth, googleProvider);
             }
+        } catch (err) {
+            lBtn.classList.remove('hidden');
+            authLoading.classList.add('hidden');
+        }
+    };
+    document.getElementById('login-btn').addEventListener('click', handleLogin);
+
+    function initApp() {
+        const browserLang = navigator.language.split('-')[0];
+        currentLang = (browserLang === 'pt') ? 'pt' : 'en';
+        applyStaticTranslations();
+        setupDataSync();
+        switchView('activity');
+    }
+
+    function setupDataSync() {
+        if (!currentUser) return;
+
+        const friendsCol = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'friends');
+        onSnapshot(friendsCol, (snap) => {
+            friends = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            populateFriendSelect();
+            refreshCurrentView();
+        }, (error) => console.error(error));
+
+        const globalExpensesCol = collection(db, 'artifacts', appId, 'shared_expenses');
+        const q = query(globalExpensesCol, where("involvedUsers", "array-contains", currentUser.email));
+
+        onSnapshot(q, (snap) => {
+            expenses = snap.docs.map(d => {
+                const data = d.data();
+                return {
+                    id: d.id,
+                    ...data,
+                    paidBy: data.paidByEmail === currentUser.email ? 'me' : 'friend',
+                    friendId: data.creatorEmail === currentUser.email ? data.friendEmail : data.creatorEmail
+                };
+            });
+            expenses.sort((a, b) => b.timestamp - a.timestamp);
+            refreshCurrentView();
+        }, (error) => console.error(error));
+    }
+
+    function populateFriendSelect() {
+        friendSelect.innerHTML = `<option value="">...</option>`;
+        friends.forEach(f => {
+            const opt = document.createElement('option');
+            opt.value = f.email;
+            opt.textContent = f.displayName;
+            friendSelect.appendChild(opt);
         });
+    }
 
-        const handleLogin = async () => {
-            const lBtn = document.getElementById('login-btn');
-            lBtn.classList.add('hidden');
-            authLoading.classList.remove('hidden');
-            try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInWithPopup(auth, googleProvider);
-                }
-            } catch (err) {
-                lBtn.classList.remove('hidden');
-                authLoading.classList.add('hidden');
-            }
-        };
-        document.getElementById('login-btn').addEventListener('click', handleLogin);
+    // --- TOUCH GESTURES (SWIPE TO DELETE) ---
+    function getClientX(e) { return e.touches ? e.touches[0].clientX : e.clientX; }
+    function getClientY(e) { return e.touches ? e.touches[0].clientY : e.clientY; }
 
-        function initApp() {
-            const browserLang = navigator.language.split('-')[0];
-            currentLang = (browserLang === 'pt') ? 'pt' : 'en';
-            applyStaticTranslations();
-            setupDataSync();
-            switchView('activity');
+    window.handleTouchStart = (e, el) => {
+        el.dataset.startX = getClientX(e);
+        el.dataset.startY = getClientY(e);
+        el.style.transition = 'none';
+        el.dataset.isSwiping = 'false';
+        el.dataset.isMouseDrag = e.type === 'mousedown' ? 'true' : 'false';
+    };
+
+    window.handleTouchMove = (e, el) => {
+        if (e.type === 'mousemove' && el.dataset.isMouseDrag !== 'true') return;
+
+        const startX = parseFloat(el.dataset.startX);
+        const startY = parseFloat(el.dataset.startY);
+        const currentX = getClientX(e);
+        const currentY = getClientY(e);
+        const diffX = startX - currentX;
+        const diffY = Math.abs(startY - currentY);
+
+        // Aborta se o utilizador estiver a fazer scroll verticalmente
+        if (diffY > Math.abs(diffX) && e.type !== 'mousemove') return;
+
+        if (diffX > 0 && diffX <= 100) {
+            el.style.transform = `translateX(-${diffX}px)`;
+            el.dataset.isSwiping = 'true';
+        } else if (diffX < 0) {
+            el.style.transform = `translateX(0px)`;
         }
+    };
 
-        function setupDataSync() {
-            if (!currentUser) return;
+    window.handleTouchEnd = (e, el) => {
+        if (el.dataset.isMouseDrag === 'true') el.dataset.isMouseDrag = 'false';
+        if (el.dataset.isSwiping !== 'true') return;
 
-            // Sincronizar Amigos (Mantém-se igual)
-            const friendsCol = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'friends');
-            onSnapshot(friendsCol, (snap) => {
-                friends = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-                populateFriendSelect();
-                refreshCurrentView();
+        el.style.transition = 'transform 0.2s ease-out';
+        const startX = parseFloat(el.dataset.startX);
+        const currentX = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
+        const diffX = startX - currentX;
+
+        if (diffX > 45) {
+            el.style.transform = `translateX(-80px)`; // Prende o swipe aberto
+            // Fecha outros painéis que possam estar abertos
+            document.querySelectorAll('.swipe-panel').forEach(panel => {
+                if (panel !== el) panel.style.transform = 'translateX(0)';
             });
-
-            // NOVA LOGICA: Sincronizar Despesas Partilhadas
-            const globalExpensesCol = collection(db, 'artifacts', appId, 'shared_expenses');
-            // Procuramos despesas onde o utilizador logado é o criador OU o amigo
-            const q = query(globalExpensesCol, where("involvedUsers", "array-contains", currentUser.email));
-
-            onSnapshot(q, (snap) => {
-                expenses = snap.docs.map(d => {
-                    const data = d.data();
-                    // Normalizamos os campos para o resto do teu código não partir
-                    return {
-                        id: d.id,
-                        ...data,
-                        // Adaptamos para a tua lógica visual de 'me' vs 'friend'
-                        paidBy: data.paidByEmail === currentUser.email ? 'me' : 'friend',
-                        friendId: data.creatorEmail === currentUser.email ? data.friendEmail : data.creatorEmail
-                    };
-                });
-                expenses.sort((a, b) => b.timestamp - a.timestamp);
-                refreshCurrentView();
-            });
+        } else {
+            el.style.transform = `translateX(0)`; // Volta ao original
         }
+        el.dataset.isSwiping = 'false';
+    };
 
-        function populateFriendSelect() {
-            friendSelect.innerHTML = `<option value="">...</option>`;
-            friends.forEach(f => {
-                const opt = document.createElement('option');
-                opt.value = f.email;
-                opt.textContent = f.displayName;
-                friendSelect.appendChild(opt);
-            });
-        }
+    // --- VIEWS ---
+    window.switchView = (v) => {
+        currentView = v;
+        const fab = document.getElementById('open-contextual-modal');
 
-        // --- VIEWS ---
-        window.switchView = (v) => {
-            currentView = v;
-            const fab = document.getElementById('open-contextual-modal');
-            
-            // Atualizar ícones da barra de navegação
-            document.querySelectorAll('.nav-item').forEach((btn, i) => {
-                const viewName = ['activity', 'friends', 'groups', 'account'][i];
+        // Lógica do Header e barra de navegação inferior
+        if (v === 'friend-details') {
+            backBtn.classList.remove('hidden');
+            searchTrigger.classList.add('hidden');
+            searchContainer.classList.add('hidden');
+            userHeaderProfile.classList.add('hidden');
+
+            const friend = friends.find(f => f.email === selectedFriendEmail) || { displayName: selectedFriendEmail.split('@')[0] };
+            viewTitle.textContent = friend.displayName;
+
+            document.querySelectorAll('.nav-item').forEach(btn => btn.classList.replace('text-[#d0bcff]', 'text-[#938f99]'));
+        } else {
+            selectedFriendEmail = null;
+            backBtn.classList.add('hidden');
+            if(searchTerm === "") searchTrigger.classList.remove('hidden');
+            userHeaderProfile.classList.remove('hidden');
+
+            document.querySelectorAll('.nav-item').forEach(btn => {
+                const viewName = btn.dataset.view;
                 const active = viewName === v;
                 btn.classList.toggle('text-[#d0bcff]', active);
                 btn.classList.toggle('text-[#938f99]', !active);
             });
+        }
 
-            // Lógica para o botão '+' (FAB)
-            if (v === 'account') {
-                fab.classList.add('opacity-20', 'pointer-events-none', 'grayscale');
-                fab.disabled = true;
-            } else {
-                fab.classList.remove('opacity-20', 'pointer-events-none', 'grayscale');
-                fab.disabled = false;
-            }
+        // FAB Lógica Visual
+        if (v === 'account') {
+            fab.classList.add('opacity-20', 'pointer-events-none', 'grayscale');
+            fab.disabled = true;
+        } else {
+            fab.classList.remove('opacity-20', 'pointer-events-none', 'grayscale');
+            fab.disabled = false;
+        }
 
-            // Renderização das vistas
-            if (v === 'activity') renderActivity();
-            else if (v === 'friends') renderFriends();
-            else if (v === 'account') renderAccount(); // Chamar a função de conta
-            else mainContent.innerHTML = `<div class="p-12 text-center opacity-40 uppercase text-xs">${v} em breve</div>`;
-        };
+        // Roteamento
+        if (v === 'activity') renderActivity();
+        else if (v === 'friends') renderFriends();
+        else if (v === 'account') renderAccount();
+        else if (v === 'friend-details') renderFriendDetailsView();
+        else mainContent.innerHTML = `<div class="p-12 text-center opacity-40 uppercase text-xs">${v} em breve</div>`;
+    };
 
-        const renderActivity = () => {
-            viewTitle.textContent = t('activityTitle');
-            
-            // 1. FILTRO DE PESQUISA: Filtra despesas pela descrição ou nome do amigo
-            const filteredExpenses = expenses.filter(exp => {
-                const descriptionMatch = exp.description.toLowerCase().includes(searchTerm);
-                const friend = friends.find(f => f.email === exp.friendId);
-                const nameMatch = friend ? friend.displayName.toLowerCase().includes(searchTerm) : false;
-                // Se não encontrar o amigo na lista, tenta pesquisar pelo e-mail (ID)
-                const emailMatch = exp.friendId.toLowerCase().includes(searchTerm);
-                return descriptionMatch || nameMatch || emailMatch;
-            });
+    window.goBack = () => {
+        if (currentView === 'friend-details') switchView('activity');
+    };
 
-            if (filteredExpenses.length === 0) {
-                mainContent.innerHTML = `<div class="p-12 text-center opacity-40"><i class="fas fa-search text-5xl mb-4"></i><p>Nenhuma despesa encontrada.</p></div>`;
-                return;
-            }
+    window.openFriendDetails = (friendEmail) => {
+        selectedFriendEmail = friendEmail;
+        switchView('friend-details');
+    };
 
-            // 2. AGRUPAMENTO: Agrupa as despesas filtradas por e-mail do amigo
-            const grouped = filteredExpenses.reduce((acc, exp) => {
-                if (!acc[exp.friendId]) acc[exp.friendId] = [];
-                acc[exp.friendId].push(exp);
-                return acc;
-            }, {});
+    const renderActivity = () => {
+        viewTitle.textContent = t('activityTitle');
 
-            let html = '<div class="view-content space-y-4">';
+        const filteredExpenses = expenses.filter(exp => {
+            const descriptionMatch = exp.description.toLowerCase().includes(searchTerm);
+            const friend = friends.find(f => f.email === exp.friendId);
+            const nameMatch = friend ? friend.displayName.toLowerCase().includes(searchTerm) : false;
+            const emailMatch = exp.friendId.toLowerCase().includes(searchTerm);
+            return descriptionMatch || nameMatch || emailMatch;
+        });
 
-            // 3. RENDERIZAÇÃO: Cria os cartões de utilizador expansíveis
-            Object.keys(grouped).forEach(friendEmail => {
-                const friendExpenses = grouped[friendEmail];
-                const friend = friends.find(f => f.email === friendEmail) || { displayName: friendEmail.split('@')[0] };
-                
-                // Calcula o saldo total com este amigo específico (baseado nas despesas visíveis)
-                const groupBalance = friendExpenses.reduce((sum, e) => {
-                    const amount = (e.splitType === 'equal') ? e.amount / 2 : e.amount;
-                    return sum + (e.paidByEmail === currentUser.email ? amount : -amount);
-                }, 0);
+        if (filteredExpenses.length === 0) {
+            mainContent.innerHTML = `<div class="p-12 text-center opacity-40"><i class="fas fa-search text-5xl mb-4"></i><p>Nenhuma atividade encontrada.</p></div>`;
+            return;
+        }
 
-                // ID seguro para o HTML (remove pontos do e-mail)
-                const safeId = friendEmail.replace(/\./g, '_');
+        const grouped = filteredExpenses.reduce((acc, exp) => {
+            if (!acc[exp.friendId]) acc[exp.friendId] = [];
+            acc[exp.friendId].push(exp);
+            return acc;
+        }, {});
 
-                html += `
-                    <div class="space-y-2">
-                        <div onclick="toggleGroup('${safeId}')" 
-                             class="flex items-center gap-3 p-3 bg-[#2b2930] rounded-2xl cursor-pointer active:scale-[0.98] transition-transform shadow-sm">
-                            <div class="w-10 h-10 rounded-full bg-[#49454f] flex items-center justify-center overflow-hidden border border-[#938f99]/20">
-                                ${friend.photoURL ? `<img src="${friend.photoURL}" class="w-full h-full object-cover">` : `<i class="fas fa-user text-xs"></i>`}
-                            </div>
-                            <div class="flex-1">
-                                <h4 class="font-bold text-sm text-[#e6e1e5]">${friend.displayName}</h4>
-                                <p class="text-[10px] text-[#938f99]">${friendExpenses.length} despesas</p>
-                            </div>
-                            <div class="text-right mr-2">
-                                <p class="text-xs font-bold ${groupBalance >= 0 ? 'text-green-400' : 'text-orange-400'}">
-                                    ${groupBalance >= 0 ? '+' : ''}${groupBalance.toFixed(2)}€
-                                </p>
-                            </div>
-                            <i id="icon-${safeId}" class="fas fa-chevron-down text-[#938f99] text-[10px] transition-transform"></i>
+        let html = '<div class="view-content space-y-3">';
+
+        // Mostra os amigos e os saldos globais como cards de entrada para os Detalhes
+        Object.keys(grouped).forEach(friendEmail => {
+            const friendExpenses = grouped[friendEmail];
+            const friend = friends.find(f => f.email === friendEmail) || { displayName: friendEmail.split('@')[0] };
+
+            const groupBalance = friendExpenses.reduce((sum, e) => {
+                const amount = (e.splitType === 'equal') ? e.amount / 2 : e.amount;
+                return sum + (e.paidByEmail === currentUser.email ? amount : -amount);
+            }, 0);
+
+            html += `
+                    <div onclick="openFriendDetails('${friendEmail}')"
+                         class="flex items-center gap-4 p-4 bg-[#2b2930] rounded-2xl cursor-pointer active:scale-[0.98] transition-transform shadow-sm">
+                        <div class="w-12 h-12 rounded-full bg-[#49454f] flex items-center justify-center overflow-hidden border border-[#938f99]/20 shrink-0">
+                            ${friend.photoURL ? `<img src="${friend.photoURL}" class="w-full h-full object-cover">` : `<i class="fas fa-user text-lg"></i>`}
                         </div>
-
-                        <div id="group-${safeId}" class="hidden space-y-2 ml-4 border-l-2 border-[#49454f] pl-4 transition-all">
-                            ${friendExpenses.map(exp => {
-                                const iPaid = exp.paidByEmail === currentUser.email;
-                                const displayAmount = (exp.splitType === 'equal') ? exp.amount / 2 : exp.amount;
-                                return `
-                                    <div class="material-card p-3 flex items-center gap-4 relative bg-[#1c1b1f] border border-[#49454f]/30">
-                                        <div class="flex-1">
-                                            <h5 class="text-xs font-medium text-[#e6e1e5]">${exp.description}</h5>
-                                            <p class="text-[9px] text-[#938f99]">${new Date(exp.date).toLocaleDateString()}</p>
-                                        </div>
-                                        <div class="text-right pr-8">
-                                            <p class="text-[#d0bcff] font-bold text-xs">${exp.amount.toFixed(2)}€</p>
-                                            <p class="text-[8px] ${iPaid ? 'text-green-400' : 'text-orange-400'}">
-                                                ${iPaid ? t('youReceive') : t('youOwe')} ${displayAmount.toFixed(2)}€
-                                            </p>
-                                        </div>
-                                        ${exp.creatorEmail === currentUser.email ? 
-                                            `<button onclick="event.stopPropagation(); window.editExpense('${exp.id}')" class="absolute right-2 p-2 text-[#938f99] hover:text-[#d0bcff]">
-                                                <i class="fas fa-pen text-[9px]"></i>
-                                            </button>` : ''}
-                                    </div>
-                                `;
-                            }).join('')}
+                        <div class="flex-1 min-w-0">
+                            <h4 class="font-bold text-base text-[#e6e1e5] truncate">${friend.displayName}</h4>
+                            <p class="text-xs text-[#938f99]">${friendExpenses.length} ${friendExpenses.length === 1 ? 'despesa' : 'despesas'}</p>
                         </div>
+                        <div class="text-right shrink-0">
+                            <p class="text-sm font-bold ${groupBalance >= 0 ? 'text-green-400' : 'text-orange-400'}">
+                                ${groupBalance >= 0 ? '+' : ''}${groupBalance.toFixed(2)}€
+                            </p>
+                        </div>
+                        <i class="fas fa-chevron-right text-[#938f99] text-sm transition-transform ml-2"></i>
                     </div>
                 `;
+        });
+
+        mainContent.innerHTML = html + '</div>';
+    };
+
+    const renderFriendDetailsView = () => {
+        let friendExpenses = expenses.filter(e => e.involvedUsers.includes(selectedFriendEmail));
+
+        // Ordenar por data (mais recente no topo)
+        friendExpenses.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+        if (friendExpenses.length === 0) {
+            mainContent.innerHTML = `<div class="p-12 text-center opacity-40"><i class="fas fa-receipt text-5xl mb-4"></i><p>${t('noExpenses')}</p></div>`;
+            return;
+        }
+
+        // Agrupar por Mês
+        const groupedByMonth = {};
+        friendExpenses.forEach(exp => {
+            const d = new Date(exp.date);
+            const monthName = d.toLocaleDateString(currentLang === 'pt' ? 'pt-PT' : 'en-US', { month: 'long' });
+            const groupKey = `${monthName.charAt(0).toUpperCase() + monthName.slice(1)} ${d.getFullYear()}`;
+
+            if (!groupedByMonth[groupKey]) groupedByMonth[groupKey] = [];
+            groupedByMonth[groupKey].push(exp);
+        });
+
+        let html = '<div class="view-content space-y-8 pb-10">';
+
+        Object.keys(groupedByMonth).forEach(monthKey => {
+            html += `
+                <div class="space-y-3">
+                    <h3 class="text-xs font-bold text-[#d0bcff] uppercase tracking-wider pl-2 sticky top-0 bg-[#1c1b1f]/90 py-1 z-20 backdrop-blur-sm shadow-[0_10px_10px_-10px_rgba(28,27,31,1)]">
+                        ${monthKey}
+                    </h3>
+                    <div class="space-y-2">`;
+
+            groupedByMonth[monthKey].forEach(exp => {
+                const iPaid = exp.paidByEmail === currentUser.email;
+                const displayAmount = (exp.splitType === 'equal') ? exp.amount / 2 : exp.amount;
+
+                html += `
+                    <div class="relative overflow-hidden rounded-2xl bg-red-600 shadow-sm mb-2">
+                        <!-- Fundo do botão Eliminar escondido atrás -->
+                        <div class="absolute inset-y-0 right-0 w-20 flex flex-col items-center justify-center text-white cursor-pointer active:bg-red-700 transition-colors" onclick="deleteExpense('${exp.id}')">
+                            <i class="fas fa-trash mb-1 text-lg"></i>
+                            <span class="text-[9px] font-bold uppercase tracking-wider">Apagar</span>
+                        </div>
+
+                        <!-- Card Deslizável -->
+                        <div class="swipe-panel material-card p-4 flex items-center gap-4 relative bg-[#1c1b1f] border border-[#49454f]/30 transition-transform duration-200 z-10 w-full rounded-2xl"
+                             ontouchstart="handleTouchStart(event, this)" onmousedown="handleTouchStart(event, this)"
+                             ontouchmove="handleTouchMove(event, this)" onmousemove="handleTouchMove(event, this)"
+                             ontouchend="handleTouchEnd(event, this)" onmouseup="handleTouchEnd(event, this)" onmouseleave="handleTouchEnd(event, this)">
+
+                            <div class="w-10 h-10 rounded-full bg-[#2b2930] flex items-center justify-center shrink-0 border border-[#49454f]/50">
+                                <i class="fas ${iPaid ? 'fa-arrow-up text-green-400' : 'fa-arrow-down text-orange-400'}"></i>
+                            </div>
+
+                            <div class="flex-1 min-w-0 pointer-events-none">
+                                <h5 class="text-sm font-medium text-[#e6e1e5] truncate">${exp.description}</h5>
+                                <p class="text-[10px] text-[#938f99]">${new Date(exp.date).toLocaleDateString()}</p>
+                            </div>
+
+                            <div class="text-right shrink-0 pr-6 pointer-events-none">
+                                <p class="text-[#e6e1e5] font-bold text-sm">${exp.amount.toFixed(2)}€</p>
+                                <p class="text-[10px] ${iPaid ? 'text-green-400' : 'text-orange-400'} font-medium">
+                                    ${iPaid ? t('youReceive') : t('youOwe')} ${displayAmount.toFixed(2)}€
+                                </p>
+                            </div>
+
+                            ${exp.creatorEmail === currentUser.email ?
+                    `<button onclick="event.stopPropagation(); window.editExpense('${exp.id}')" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-[#938f99] hover:text-[#d0bcff] active:scale-90 transition-transform">
+                                    <i class="fas fa-pen text-sm"></i>
+                                </button>` : ''}
+                        </div>
+                    </div>
+                    `;
             });
 
-            mainContent.innerHTML = html + '</div>';
-        };
+            html += `</div></div>`;
+        });
 
-        const renderFriends = () => {
-            viewTitle.textContent = t('friendsTitle');
-            let totalToReceive = friends.reduce((acc, f) => {
-                const bal = calculateFriendBalance(f.email);
-                return acc + (bal > 0 ? bal : 0);
-            }, 0);
-            let totalToPay = Math.abs(friends.reduce((acc, f) => {
-                const bal = calculateFriendBalance(f.email);
-                return acc + (bal < 0 ? bal : 0);
-            }, 0));
+        html += '</div>';
+        mainContent.innerHTML = html;
+    };
 
-            let html = `
+    const renderFriends = () => {
+        viewTitle.textContent = t('friendsTitle');
+        let totalToReceive = friends.reduce((acc, f) => {
+            const bal = calculateFriendBalance(f.email);
+            return acc + (bal > 0 ? bal : 0);
+        }, 0);
+        let totalToPay = Math.abs(friends.reduce((acc, f) => {
+            const bal = calculateFriendBalance(f.email);
+            return acc + (bal < 0 ? bal : 0);
+        }, 0));
+
+        let html = `
                 <div class="view-content space-y-6">
                     <div class="grid grid-cols-2 gap-3">
                         <div class="bg-green-500/10 border border-green-500/20 p-4 rounded-3xl text-center">
@@ -685,38 +818,38 @@
                     </div>
                     <div class="space-y-2">
                         ${friends.length === 0 ? `<p class="text-center text-[#938f99] py-12 text-sm">${t('noFriends')}</p>` : friends.map(f => {
-                            const bal = calculateFriendBalance(f.email);
-                            return `
-                                <div class="material-card p-4 flex items-center gap-4">
-                                    <div class="w-10 h-10 rounded-full bg-[#49454f] overflow-hidden flex items-center justify-center">
-                                        ${f.photoURL ? `<img src="${f.photoURL}" class="w-full h-full object-cover">` : `<i class="fas fa-user text-xs"></i>`}
+            const bal = calculateFriendBalance(f.email);
+            return `
+                                <div class="material-card p-4 flex items-center gap-4 cursor-pointer active:scale-[0.98] transition-transform" onclick="openFriendDetails('${f.email}')">
+                                    <div class="w-12 h-12 rounded-full bg-[#49454f] overflow-hidden flex items-center justify-center shrink-0">
+                                        ${f.photoURL ? `<img src="${f.photoURL}" class="w-full h-full object-cover">` : `<i class="fas fa-user text-lg"></i>`}
                                     </div>
-                                    <div class="flex-1">
-                                        <h4 class="font-medium text-sm">${f.displayName}</h4>
-                                        <p class="text-[10px] text-[#938f99]">${f.email}</p>
+                                    <div class="flex-1 min-w-0">
+                                        <h4 class="font-bold text-base text-[#e6e1e5] truncate">${f.displayName}</h4>
+                                        <p class="text-[10px] text-[#938f99] truncate">${f.email}</p>
                                     </div>
-                                    <div class="text-right">
-                                        <p class="text-xs ${bal > 0 ? 'text-green-400' : bal < 0 ? 'text-orange-400' : 'text-[#938f99]'} font-bold">
-                                            ${bal > 0 ? t('owesYou') + bal.toFixed(2) : bal < 0 ? t('youOweFriend') + Math.abs(bal).toFixed(2) : t('settled')}
+                                    <div class="text-right shrink-0">
+                                        <p class="text-sm ${bal > 0 ? 'text-green-400' : bal < 0 ? 'text-orange-400' : 'text-[#938f99]'} font-bold">
+                                            ${bal > 0 ? '+' + bal.toFixed(2) + '€' : bal < 0 ? bal.toFixed(2) + '€' : 'Tudo Pago'}
                                         </p>
                                     </div>
                                 </div>`;
-                        }).join('')}
+        }).join('')}
                     </div>
                 </div>`;
-            mainContent.innerHTML = html;
-        };
+        mainContent.innerHTML = html;
+    };
 
-        const renderGroups = () => {
-            viewTitle.textContent = t('navGroups');
-            mainContent.innerHTML = `<div class="p-12 text-center opacity-40"><i class="fas fa-layer-group text-5xl mb-4"></i><p>${t('groupsComingSoon')}</p></div>`;
-        };
+    const renderGroups = () => {
+        viewTitle.textContent = t('navGroups');
+        mainContent.innerHTML = `<div class="p-12 text-center opacity-40"><i class="fas fa-layer-group text-5xl mb-4"></i><p>${t('groupsComingSoon')}</p></div>`;
+    };
 
-        const renderAccount = () => {
-            viewTitle.textContent = t('accountTitle');
-            const u = currentUser;
-            if (!u) return;
-            mainContent.innerHTML = `
+    const renderAccount = () => {
+        viewTitle.textContent = t('accountTitle');
+        const u = currentUser;
+        if (!u) return;
+        mainContent.innerHTML = `
                 <div class="view-content space-y-6 text-center">
                     <div class="flex flex-col items-center p-6 bg-[#2b2930] rounded-3xl">
                         <div class="w-20 h-20 rounded-full border-4 border-[#d0bcff] overflow-hidden mb-4">
@@ -733,202 +866,208 @@
                                 <option value="en" ${currentLang === 'en' ? 'selected' : ''}>English</option>
                             </select>
                         </div>
-                        <button id="logout-btn" class="w-full p-4 text-left text-red-400 text-sm font-medium flex gap-3 items-center">
+                        <button id="logout-btn" class="w-full p-4 text-left text-red-400 text-sm font-medium flex gap-3 items-center hover:bg-[#1c1b1f] transition-colors">
                             <i class="fas fa-sign-out-alt"></i> ${t('logout')}
                         </button>
                     </div>
                 </div>`;
-            document.getElementById('lang-switcher').addEventListener('change', (e) => window.setLanguage(e.target.value));
-            document.getElementById('logout-btn').addEventListener('click', window.logout);
-        };
+        document.getElementById('lang-switcher').addEventListener('change', (e) => window.setLanguage(e.target.value));
+        document.getElementById('logout-btn').addEventListener('click', window.logout);
+    };
 
-        // --- CONTEXTUAL MODAL LOGIC ---
-        openContextualModalBtn.addEventListener('click', () => {
-            if (currentView === 'friends') {
-                openFriendModal();
-            } else {
-                openExpenseModal();
-            }
-        });
+    // --- CONTEXTUAL MODAL LOGIC ---
+    openContextualModalBtn.addEventListener('click', () => {
+        if (currentView === 'friends') {
+            openFriendModal();
+        } else if (currentView === 'friend-details' && selectedFriendEmail) {
+            // Se já estamos dentro de uma vista de um amigo, preenche automaticamente
+            openExpenseModal(selectedFriendEmail);
+        } else {
+            openExpenseModal();
+        }
+    });
 
-        function openExpenseModal() {
-            modalTitle.textContent = t('modalNew');
-            submitBtn.textContent = t('save');
-            expenseForm.reset();
-            document.getElementById('exp-id').value = "";
-            document.getElementById('exp-date').value = new Date().toISOString().split('T')[0];
-            updateSplitPreview();
-            expenseModal.classList.remove('hidden');
+    function openExpenseModal(prefillFriendEmail = null) {
+        modalTitle.textContent = t('modalNew');
+        submitBtn.textContent = t('save');
+        expenseForm.reset();
+        document.getElementById('exp-id').value = "";
+        document.getElementById('exp-date').value = new Date().toISOString().split('T')[0];
+
+        // Lógica de pré-seleção
+        if (prefillFriendEmail) {
+            document.getElementById('exp-friend').value = prefillFriendEmail;
+        } else {
+            document.getElementById('exp-friend').value = "";
         }
 
-        function openFriendModal() {
-            friendForm.reset();
-            friendModal.classList.remove('hidden');
+        updateSplitPreview();
+        expenseModal.classList.remove('hidden');
+    }
+
+    function openFriendModal() {
+        friendForm.reset();
+        friendModal.classList.remove('hidden');
+    }
+
+    closeModalBtn.addEventListener('click', () => expenseModal.classList.add('hidden'));
+    closeFriendModalBtn.addEventListener('click', () => friendModal.classList.add('hidden'));
+
+    // --- ACTIONS ---
+    window.deleteExpense = async (id) => {
+        if(!currentUser) return;
+        try {
+            await deleteDoc(doc(db, 'artifacts', appId, 'shared_expenses', id));
+            showToast(t('toastDeleted'));
+            refreshCurrentView(); // Atualiza a vista dinamicamente
+        } catch (err) {
+            console.error("Erro ao apagar despesa:", err);
+        }
+    };
+
+    friendForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const emailInput = document.getElementById('add-friend-email');
+        const nameInput = document.getElementById('add-friend-custom-name');
+        const email = emailInput.value.trim().toLowerCase();
+        const customName = nameInput.value.trim();
+
+        if (!email || !currentUser) return;
+        if (email === currentUser.email) return;
+        if (friends.some(f => f.email === email)) {
+            showToast(t('friendAlreadyExists'));
+            return;
         }
 
-        closeModalBtn.addEventListener('click', () => expenseModal.classList.add('hidden'));
-        closeFriendModalBtn.addEventListener('click', () => friendModal.classList.add('hidden'));
-
-        // --- ACTIONS ---
-        friendForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const emailInput = document.getElementById('add-friend-email');
-            const nameInput = document.getElementById('add-friend-custom-name');
-            const email = emailInput.value.trim().toLowerCase();
-            const customName = nameInput.value.trim();
-            
-            if (!email || !currentUser) return;
-            if (email === currentUser.email) return;
-            if (friends.some(f => f.email === email)) {
-                showToast(t('friendAlreadyExists'));
-                return;
-            }
-
-            try {
-                const profileRef = doc(db, 'artifacts', appId, 'public', 'data', 'profiles', email.replace(/\./g, '_'));
-                const snap = await getDoc(profileRef);
-                let friendData = {
-                    email: email,
-                    displayName: customName || email.split('@')[0],
-                    photoURL: null,
-                    isGuest: true
-                };
-
-                if (snap.exists()) {
-                    const data = snap.data();
-                    friendData.displayName = customName || data.displayName;
-                    friendData.photoURL = data.photoURL;
-                    friendData.isGuest = false;
-                }
-
-                const myFriendsCol = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'friends');
-                await addDoc(myFriendsCol, { ...friendData, addedAt: Date.now() });
-                
-                friendModal.classList.add('hidden');
-                showToast(t('friendAdded'));
-            } catch (err) { console.error(err); }
-        });
-
-        function calculateFriendBalance(email) {
-            let bal = 0;
-            expenses.forEach(e => {
-                // Verifica se esta despesa é entre eu e este amigo específico
-                if (e.involvedUsers.includes(email)) {
-                    const totalAmount = e.amount;
-                    const share = (e.splitType === 'equal') ? totalAmount / 2 : totalAmount;
-                    
-                    if (e.paidByEmail === currentUser.email) {
-                        // Eu paguei, ele deve-me
-                        bal += share;
-                    } else {
-                        // Ele pagou, eu devo-lhe
-                        bal -= share;
-                    }
-                }
-            });
-            return bal;
-        }
-
-        function refreshCurrentView() { switchView(currentView); }
-        function applyStaticTranslations() {
-            document.getElementById('nav-activity').textContent = t('navActivity');
-            document.getElementById('nav-friends').textContent = t('navFriends');
-            document.getElementById('nav-groups').textContent = t('navGroups');
-            document.getElementById('nav-account').textContent = t('navAccount');
-            document.getElementById('lbl-desc').textContent = t('lblDesc');
-            document.getElementById('lbl-amount').textContent = t('lblAmount');
-            document.getElementById('lbl-date').textContent = t('lblDate');
-            document.getElementById('lbl-friend').textContent = t('lblFriend');
-            document.getElementById('lbl-paid-by').textContent = t('lblPaidBy');
-            document.getElementById('lbl-split').textContent = t('lblSplit');
-            document.getElementById('lbl-friend-email').textContent = t('lblFriendEmail');
-            document.getElementById('lbl-friend-name').textContent = t('lblFriendName');
-            document.getElementById('friend-modal-title').textContent = t('modalAddFriend');
-            document.getElementById('friend-submit-btn').textContent = t('addToList');
-            
-            paidBySelect.options[0].textContent = t('me');
-            paidBySelect.options[1].textContent = t('friend');
-            splitTypeSelect.options[0].textContent = t('splitEqual');
-            splitTypeSelect.options[1].textContent = t('splitFull');
-        }
-
-        window.setLanguage = (l) => { currentLang = l; initApp(); };
-        window.logout = async () => { try { await signOut(auth); location.reload(); } catch(e) {} };
-        function showToast(m) { const tEl = document.getElementById('toast'); tEl.textContent = m; tEl.classList.remove('opacity-0'); setTimeout(() => tEl.classList.add('opacity-0'), 3000); }
-
-        function updateSplitPreview() {
-            const pb = paidBySelect.value;
-            const st = splitTypeSelect.value;
-            let key = (pb === 'me') ? (st === 'equal' ? 'splitInfoMeEqual' : 'splitInfoMeFull') : (st === 'equal' ? 'splitInfoFriendEqual' : 'splitInfoFriendFull');
-            splitInfo.textContent = t(key);
-        }
-        paidBySelect.addEventListener('change', updateSplitPreview);
-        splitTypeSelect.addEventListener('change', updateSplitPreview);
-
-        expenseForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            if (!currentUser) return;
-            
-            const id = document.getElementById('exp-id').value;
-            const friendEmail = document.getElementById('exp-friend').value;
-            
-            const data = {
-                description: document.getElementById('exp-desc').value,
-                amount: parseFloat(document.getElementById('exp-amount').value),
-                date: document.getElementById('exp-date').value,
-                creatorEmail: currentUser.email, // Quem criou
-                friendEmail: friendEmail,       // Com quem partilhou
-                paidByEmail: document.getElementById('exp-paid-by').value === 'me' ? currentUser.email : friendEmail,
-                splitType: document.getElementById('exp-split-type').value,
-                timestamp: Date.now(),
-                // Array para facilitar a query no Firebase
-                involvedUsers: [currentUser.email, friendEmail]
+        try {
+            const profileRef = doc(db, 'artifacts', appId, 'public', 'data', 'profiles', email.replace(/\./g, '_'));
+            const snap = await getDoc(profileRef);
+            let friendData = {
+                email: email,
+                displayName: customName || email.split('@')[0],
+                photoURL: null,
+                isGuest: true
             };
 
-            try {
-                // Agora usamos uma coleção global de despesas do App
-                const globalExpensesCol = collection(db, 'artifacts', appId, 'shared_expenses');
-                
-                if (id) {
-                    await updateDoc(doc(db, 'artifacts', appId, 'shared_expenses', id), data);
+            if (snap.exists()) {
+                const data = snap.data();
+                friendData.displayName = customName || data.displayName;
+                friendData.photoURL = data.photoURL;
+                friendData.isGuest = false;
+            }
+
+            const myFriendsCol = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'friends');
+            await addDoc(myFriendsCol, { ...friendData, addedAt: Date.now() });
+
+            friendModal.classList.add('hidden');
+            showToast(t('friendAdded'));
+        } catch (err) { console.error(err); }
+    });
+
+    function calculateFriendBalance(email) {
+        let bal = 0;
+        expenses.forEach(e => {
+            if (e.involvedUsers.includes(email)) {
+                const totalAmount = e.amount;
+                const share = (e.splitType === 'equal') ? totalAmount / 2 : totalAmount;
+
+                if (e.paidByEmail === currentUser.email) {
+                    bal += share;
                 } else {
-                    await addDoc(globalExpensesCol, data);
+                    bal -= share;
                 }
-                
-                expenseModal.classList.add('hidden');
-                showToast(id ? t('toastUpdated') : t('toastCreated'));
-            } catch (err) { 
-                console.error("Erro ao salvar despesa:", err); 
             }
         });
+        return bal;
+    }
 
-        window.editExpense = (id) => {
-            const exp = expenses.find(e => e.id === id);
-            if (!exp) return;
-            modalTitle.textContent = t('modalEdit');
-            submitBtn.textContent = t('update');
-            document.getElementById('exp-id').value = exp.id;
-            document.getElementById('exp-desc').value = exp.description;
-            document.getElementById('exp-amount').value = exp.amount;
-            document.getElementById('exp-date').value = exp.date;
-            document.getElementById('exp-friend').value = exp.friendId;
-            document.getElementById('exp-paid-by').value = exp.paidBy;
-            document.getElementById('exp-split-type').value = exp.splitType;
-            updateSplitPreview();
-            expenseModal.classList.remove('hidden');
+    function refreshCurrentView() { switchView(currentView); }
+    function applyStaticTranslations() {
+        document.getElementById('nav-activity').textContent = t('navActivity');
+        document.getElementById('nav-friends').textContent = t('navFriends');
+        document.getElementById('nav-groups').textContent = t('navGroups');
+        document.getElementById('nav-account').textContent = t('navAccount');
+        document.getElementById('lbl-desc').textContent = t('lblDesc');
+        document.getElementById('lbl-amount').textContent = t('lblAmount');
+        document.getElementById('lbl-date').textContent = t('lblDate');
+        document.getElementById('lbl-friend').textContent = t('lblFriend');
+        document.getElementById('lbl-paid-by').textContent = t('lblPaidBy');
+        document.getElementById('lbl-split').textContent = t('lblSplit');
+        document.getElementById('lbl-friend-email').textContent = t('lblFriendEmail');
+        document.getElementById('lbl-friend-name').textContent = t('lblFriendName');
+        document.getElementById('friend-modal-title').textContent = t('modalAddFriend');
+        document.getElementById('friend-submit-btn').textContent = t('addToList');
+
+        paidBySelect.options[0].textContent = t('me');
+        paidBySelect.options[1].textContent = t('friend');
+        splitTypeSelect.options[0].textContent = t('splitEqual');
+        splitTypeSelect.options[1].textContent = t('splitFull');
+    }
+
+    window.setLanguage = (l) => { currentLang = l; initApp(); };
+    window.logout = async () => { try { await signOut(auth); location.reload(); } catch(e) {} };
+    function showToast(m) { const tEl = document.getElementById('toast'); tEl.textContent = m; tEl.classList.remove('opacity-0'); setTimeout(() => tEl.classList.add('opacity-0'), 3000); }
+
+    function updateSplitPreview() {
+        const pb = paidBySelect.value;
+        const st = splitTypeSelect.value;
+        let key = (pb === 'me') ? (st === 'equal' ? 'splitInfoMeEqual' : 'splitInfoMeFull') : (st === 'equal' ? 'splitInfoFriendEqual' : 'splitInfoFriendFull');
+        splitInfo.textContent = t(key);
+    }
+    paidBySelect.addEventListener('change', updateSplitPreview);
+    splitTypeSelect.addEventListener('change', updateSplitPreview);
+
+    expenseForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!currentUser) return;
+
+        const id = document.getElementById('exp-id').value;
+        const friendEmail = document.getElementById('exp-friend').value;
+
+        const data = {
+            description: document.getElementById('exp-desc').value,
+            amount: parseFloat(document.getElementById('exp-amount').value),
+            date: document.getElementById('exp-date').value,
+            creatorEmail: currentUser.email,
+            friendEmail: friendEmail,
+            paidByEmail: document.getElementById('exp-paid-by').value === 'me' ? currentUser.email : friendEmail,
+            splitType: document.getElementById('exp-split-type').value,
+            timestamp: Date.now(),
+            involvedUsers: [currentUser.email, friendEmail]
         };
-        window.toggleGroup = (id) => {
-            const el = document.getElementById(`group-${id}`);
-            const icon = document.getElementById(`icon-${id}`);
-            if (el.classList.contains('hidden')) {
-                el.classList.remove('hidden');
-                icon.style.transform = 'rotate(180deg)';
-            } else {
-                el.classList.add('hidden');
-                icon.style.transform = 'rotate(0deg)';
-            }
-        };        
 
-    </script>
+        try {
+            const globalExpensesCol = collection(db, 'artifacts', appId, 'shared_expenses');
+
+            if (id) {
+                await updateDoc(doc(db, 'artifacts', appId, 'shared_expenses', id), data);
+            } else {
+                await addDoc(globalExpensesCol, data);
+            }
+
+            expenseModal.classList.add('hidden');
+            showToast(id ? t('toastUpdated') : t('toastCreated'));
+        } catch (err) {
+            console.error("Erro ao salvar despesa:", err);
+        }
+    });
+
+    window.editExpense = (id) => {
+        const exp = expenses.find(e => e.id === id);
+        if (!exp) return;
+        modalTitle.textContent = t('modalEdit');
+        submitBtn.textContent = t('update');
+        document.getElementById('exp-id').value = exp.id;
+        document.getElementById('exp-desc').value = exp.description;
+        document.getElementById('exp-amount').value = exp.amount;
+        document.getElementById('exp-date').value = exp.date;
+        document.getElementById('exp-friend').value = exp.friendId;
+        document.getElementById('exp-paid-by').value = exp.paidBy;
+        document.getElementById('exp-split-type').value = exp.splitType;
+        updateSplitPreview();
+        expenseModal.classList.remove('hidden');
+    };
+
+</script>
 </body>
 </html>
