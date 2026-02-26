@@ -8,7 +8,7 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     permissions:
-      contents: write  
+      contents: write
 
     steps:
       - name: Checkout
@@ -18,9 +18,12 @@ jobs:
         env:
           CONFIG: ${{ secrets.FIREBASE_CONFIG }}
         run: |
-          echo "$CONFIG" > firebase-config.json
-          sed -i '/__FIREBASE_CONFIG_PLACEHOLDER__/c\' firebase-config.json index.html
-          rm firebase-config.json
+          node -e "
+          const fs = require('fs');
+          let html = fs.readFileSync('index.html', 'utf8');
+          html = html.replace('__FIREBASE_CONFIG_PLACEHOLDER__', process.env.CONFIG);
+          fs.writeFileSync('index.html', html);
+          "
 
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@v4
