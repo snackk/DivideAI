@@ -385,6 +385,7 @@
 
     // --- FIREBASE ---
     const firebaseConfig = {"apiKey":"AIzaSyB9lbE5DfWqQOOw9oR2UEyWO1K6ntuNCWI","authDomain":"test-5d868.firebaseapp.com","projectId":"test-5d868","storageBucket":"test-5d868.firebasestorage.app","messagingSenderId":"980585676684","appId":"1:980585676684:web:07702697c10b5fe319a0a9"};
+    const googleProvider = new GoogleAuthProvider();
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
