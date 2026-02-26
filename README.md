@@ -181,7 +181,6 @@ service cloud.firestore {
 3. Paste your `firebaseConfig` into the script section in `index.html`.
 4. Serve the files with any static HTTP server (for example `firebase hosting`, `npx serve`, etc.).
 5. Open the app in the browser, sign in with Google, add friends, and start adding shared expenses.
-
 <br>
 
 Written by [snackk](https://github.com/snackk)
