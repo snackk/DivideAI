@@ -385,6 +385,7 @@
 
     // --- FIREBASE ---
     const firebaseConfig = __FIREBASE_CONFIG_PLACEHOLDER__;
+    const googleProvider = new GoogleAuthProvider();
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
