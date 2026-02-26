@@ -138,23 +138,31 @@ You only need to serve:
 
 ## 🔐 Firestore Security Rules
 
-```
+```javascript
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
+    // Regras para a coleção global de despesas partilhadas
     match /artifacts/DivideAI/shared_expenses/{expenseId} {
+      // Permite ler se o e-mail do utilizador estiver na lista de envolvidos
       allow read: if request.auth != null && 
                   request.auth.token.email in resource.data.involvedUsers;
       
-      allow create: if request.auth != null;
+      // Permite criar se o utilizador estiver autenticado e se incluir a si próprio na lista
+      allow create: if request.auth != null && 
+                    request.auth.token.email in request.resource.data.involvedUsers;
       
+      // Permite editar ou apagar se for o criador original
       allow update, delete: if request.auth != null && 
                              resource.data.creatorEmail == request.auth.token.email;
     }
 
+    // Perfil público: qualquer um lê, apenas o dono escreve
     match /artifacts/DivideAI/public/data/profiles/{profileId} {
-      allow read, write: if request.auth != null;
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && 
+                    request.auth.token.email.replace(".", "_") == profileId;
     }
 
     match /artifacts/DivideAI/users/{userId}/friends/{friendId} {
