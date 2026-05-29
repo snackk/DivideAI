@@ -1,1 +1,13 @@
 .idea/
+
+# Frontend
+node_modules/
+dist/
+.env
+.env.local
+
+# OS
+.DS_Store
+
+# Backend
+backend/**/target/
