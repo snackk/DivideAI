@@ -6,135 +6,126 @@ Users authenticate with Google, add friends, record shared expenses, and see per
 ## ✨ Features
 
 - Google Sign‑In authentication (Firebase Auth with Google provider).
-- Multi language support: Portuguese and English, auto‑detected from browser with manual switch in the account screen.
+- Multi language support: Portuguese, English, and French — auto‑detected from browser with manual switch in the account screen.
 - Friends list synced to Firestore, including profile picture when available.
-- Shared expenses between you and a friend, with 50/50 or 100% split modes and “paid by me/friend” logic.
-- Per‑friend balances showing what you owe or what they owe you, plus totals “to receive” and “to pay”.
+- Shared expenses between you and a friend, with 50/50 or 100% split modes and "paid by me/friend" logic.
+- Per‑friend balances showing what you owe or what they owe you, plus totals "to receive" and "to pay".
+- Settle up (long‑press on a friend card) to zero out balances.
+- Swipe‑to‑delete on individual expense items.
 - Mobile‑first UI with bottom navigation (Activity, Friends, Groups – coming soon, Account).
+- PWA support (manifest, apple‑mobile‑web‑app meta tags).
 
 ## 🧱 Tech Stack
 
 - **Frontend**
-  - HTML, CSS, JavaScript
-  - Tailwind CSS via CDN
+  - React 18 + Vite
+  - Tailwind CSS v3 (PostCSS)
+  - react‑i18next for internationalization
   - Font Awesome icons
   - Google Fonts (Roboto)
 
 - **Backend / BaaS**
   - Firebase Authentication (Google provider, optional custom token login)
   - Cloud Firestore as main database
-  - Realtime sync using Firestore listeners
+  - Realtime sync using Firestore `onSnapshot` listeners
+
+## 📁 Project Structure
+
+```
+├── index.html                 # Minimal Vite entry with PWA meta tags
+├── package.json
+├── vite.config.js
+├── tailwind.config.js
+├── postcss.config.js
+├── logo.png
+├── manifest.json
+├── CNAME
+└── src/
+    ├── main.jsx               # ReactDOM.createRoot entry
+    ├── App.jsx                # Auth gate, layout shell, state‑based view switching
+    ├── firebase.js            # Firebase init (env vars or window config)
+    ├── i18n/
+    │   ├── index.js           # i18next setup with browser language detection
+    │   ├── pt.json
+    │   ├── en.json
+    │   └── fr.json
+    ├── hooks/
+    │   ├── useAuth.js         # Auth state, login, logout, profile sync
+    │   ├── useExpenses.js     # Firestore realtime expenses CRUD
+    │   ├── useFriends.js      # Firestore realtime friends list + add
+    │   └── useSearch.js       # Search term state
+    ├── components/
+    │   ├── AuthScreen.jsx     # Google login screen
+    │   ├── Header.jsx         # Sticky header with search + avatar
+    │   ├── BottomNav.jsx      # Bottom nav tabs + center FAB
+    │   ├── Toast.jsx          # Toast notification
+    │   ├── modals/
+    │   │   ├── ExpenseModal.jsx
+    │   │   ├── FriendModal.jsx
+    │   │   └── SettleModal.jsx
+    │   └── views/
+    │       ├── ActivityView.jsx
+    │       ├── FriendsView.jsx
+    │       ├── FriendDetailsView.jsx
+    │       ├── GroupsView.jsx
+    │       └── AccountView.jsx
+    ├── utils/
+    │   ├── balance.js         # calculateFriendBalance logic
+    │   └── gestures.js        # useLongPress + useSwipe hooks
+    └── styles/
+        └── index.css          # Tailwind directives + custom CSS variables
+```
 
 ## 🏗️ Architecture Overview
 
-The app is a single‑page application that runs entirely in the browser and talks directly to Firebase.
+The app is a React single‑page application that talks directly to Firebase. No backend server required — state‑based view switching (no React Router).
 
-Main concepts:
+### Authentication
 
-- **Authentication**
-  - Google Sign‑In using Firebase Auth’s `GoogleAuthProvider`.
-  - Optional support for custom token login (e.g. when `initialauthtoken` is present in the page).
+- Google Sign‑In using Firebase Auth's `GoogleAuthProvider`.
+- Optional support for custom token login (`window.__initial_auth_token`).
 
-- **Data model in Firestore**
-  - All data is organized under an `artifacts/{appId}` root document, where `appId` is set to `DivideAI`.
+### Data Model (Firestore)
 
-### 👥 Public Profiles
+All data is organized under `artifacts/DivideAI/`.
 
-- Path:  
-  `artifacts/{appId}/public/data/profiles/{safeEmail}`
+#### 👥 Public Profiles
 
-- `safeEmail` is the email with dots replaced (e.g. `user.name@gmail.com` → `user_name@gmail_com`).
+- **Path:** `artifacts/DivideAI/public/data/profiles/{safeEmail}`
+- `safeEmail` = email with dots replaced by underscores.
+- Fields: `uid`, `email`, `displayName`, `photoURL`, `updatedAt`
 
-- Example fields:
-  - `uid`: Firebase Auth UID (when known)
-  - `email`: user email
-  - `displayName`: display name from Google or custom name
-  - `photoURL`: profile photo URL, if available
-  - `isGuest`: `true` if no public Google profile is found
-  - `updatedAt`: timestamp in milliseconds
+#### 🤝 User Friends
 
-On login, the app saves/updates the current user profile in this collection.  
-When adding a friend, it tries to load this profile to reuse name and photo.
+- **Path:** `artifacts/DivideAI/users/{uid}/friends/{friendDoc}`
+- Fields: `email`, `displayName`, `photoURL`, `isGuest`, `addedAt`
 
-### 🤝 User Friends
+#### 🧾 Shared Expenses
 
-- Path:  
-  `artifacts/{appId}/users/{uid}/friends/{friendDoc}`
+- **Path:** `artifacts/DivideAI/shared_expenses/{expenseId}`
+- Fields: `description`, `amount`, `date`, `creatorEmail`, `friendEmail`, `paidByEmail`, `splitType` (`equal`|`full`), `timestamp`, `involvedUsers[]`
 
-- Each document represents one friend for that user.
-
-- Example fields:
-  - `email`
-  - `displayName`
-  - `photoURL`
-  - `isGuest`
-  - `addedAt`: timestamp in milliseconds
-
-Friends are added via the “Add Friend” flow by providing a Google email.  
-If a public profile document exists, the app reuses that data; otherwise it stores a “guest” friend with an optional custom name.
-
-### 🧾 Shared Expenses
-
-- Collection:  
-  `artifacts/{appId}/sharedexpenses/{expenseId}`
-
-- Each document represents one expense shared between the logged‑in user and a friend.
-
-- Example fields:
-  - `description`: short text
-  - `amount`: number (total expense)
-  - `date`: string date (e.g. `YYYY-MM-DD`)
-  - `creatorEmail`: email of the user who created the expense
-  - `friendEmail`: email of the other participant
-  - `paidByEmail`: email of the person who actually paid
-  - `splitType`: `"equal"` (50/50) or `"full"` (100% owed by the other person)
-  - `timestamp`: numeric timestamp used for sorting
-  - `involvedUsers`: array of emails, e.g. `[currentUser.email, friendEmail]`
-
-The UI calculates balances per friend by iterating these documents:
-
-- If current user paid:
-  - Friend owes half or full amount according to `splitType`.
-- If friend paid:
-  - Current user owes half or full amount according to `splitType`.
+Balance calculation:
+- If current user paid → friend owes half (equal) or full amount.
+- If friend paid → current user owes half (equal) or full amount.
 
 ## ☁️ Infrastructure Requirements
 
-To run DivideAi you need:
-
-- A Firebase project (e.g. created in the Firebase console).
-- Enabled products:
-  - **Authentication**
-    - Sign‑in providers: Google enabled.
-  - **Firestore**
-    - Cloud Firestore database (production mode recommended).
-
-- A Firebase Web App configuration with:
-  - `apiKey`
-  - `authDomain`
-  - `projectId`
-  - `storageBucket`
-  - `messagingSenderId`
-  - `appId`
-
-Update the `firebaseConfig` object in the HTML/JS with your own values.
+- A Firebase project with:
+  - **Authentication** — Google provider enabled.
+  - **Cloud Firestore** — production mode.
+- Firebase Web App config values (set as environment variables):
+  - `VITE_FIREBASE_API_KEY`
+  - `VITE_FIREBASE_AUTH_DOMAIN`
+  - `VITE_FIREBASE_PROJECT_ID`
+  - `VITE_FIREBASE_STORAGE_BUCKET`
+  - `VITE_FIREBASE_MESSAGING_SENDER_ID`
+  - `VITE_FIREBASE_APP_ID`
 
 ### 🌐 Hosting
 
-Any static hosting solution works, for example:
-
-- Firebase Hosting
-- GitHub Pages
-- Netlify
-- Vercel
-- S3 + CloudFront
-
-You only need to serve:
-
-- `index.html`
-- `manifest.json`
-- icons (e.g. `logo.png`)
-- any other static assets
+Any static hosting works (GitHub Pages, Firebase Hosting, Netlify, Vercel).  
+Deploy the `dist/` folder after running `npm run build`.
 
 ## 🔐 Firestore Security Rules
 
@@ -142,23 +133,15 @@ You only need to serve:
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Regras para a coleção global de despesas partilhadas
     match /artifacts/DivideAI/shared_expenses/{expenseId} {
-      // Permite ler se o e-mail do utilizador estiver na lista de envolvidos
       allow read: if request.auth != null && 
                   request.auth.token.email in resource.data.involvedUsers;
-      
-      // Permite criar se o utilizador estiver autenticado e se incluir a si próprio na lista
       allow create: if request.auth != null && 
                     request.auth.token.email in request.resource.data.involvedUsers;
-      
-      // Permite editar ou apagar se for o criador original
       allow update, delete: if request.auth != null && 
                              resource.data.creatorEmail == request.auth.token.email;
     }
 
-    // Perfil público: qualquer um lê, apenas o dono escreve
     match /artifacts/DivideAI/public/data/profiles/{profileId} {
       allow read: if request.auth != null;
       allow write: if request.auth != null && 
@@ -174,13 +157,35 @@ service cloud.firestore {
 
 ## 🖥️ Running Locally
 
-1. Create a Firebase project and enable:
-   - Authentication with Google provider.
-   - Cloud Firestore.
-2. Create a Web App in Firebase and copy the generated config.
-3. Paste your `firebaseConfig` into the script section in `index.html`.
-4. Serve the files with any static HTTP server (for example `firebase hosting`, `npx serve`, etc.).
-5. Open the app in the browser, sign in with Google, add friends, and start adding shared expenses.
+1. Create a Firebase project and enable Authentication (Google) + Cloud Firestore.
+2. Copy your Firebase config values.
+3. In the project root:
+   ```bash
+   npm install
+   ```
+4. Create a `.env` file in the project root:
+   ```env
+   VITE_FIREBASE_API_KEY=your_key
+   VITE_FIREBASE_AUTH_DOMAIN=your_domain
+   VITE_FIREBASE_PROJECT_ID=your_project
+   VITE_FIREBASE_STORAGE_BUCKET=your_bucket
+   VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+   VITE_FIREBASE_APP_ID=your_app_id
+   ```
+5. Start the dev server:
+   ```bash
+   npm run dev
+   ```
+6. Open the app in the browser, sign in with Google, add friends, and start sharing expenses.
+
+## 🚀 Building for Production
+
+```bash
+npm run build
+```
+
+Output goes to `dist/` — deploy this folder to your static host.
+
 <br>
 
 Written by [snackk](https://github.com/snackk)
