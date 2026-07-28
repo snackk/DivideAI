@@ -10,7 +10,7 @@ export default function FriendDetailsView({ expenses, friends, user, selectedFri
   if (friendExpenses.length === 0) {
     return (
       <div className="p-12 text-center opacity-40">
-        <i className="fas fa-receipt text-5xl mb-4"></i>
+        <i className="fas fa-receipt text-5xl mb-4 text-[#d0bcff]"></i>
         <p>{t('noExpenses')}</p>
       </div>
     );
@@ -51,7 +51,7 @@ function ExpenseCard({ exp, user, onDelete, onEdit, t }) {
   const isSettle = exp.description === 'Liquidação de Contas' || exp.description === 'Settlement' || exp.description === 'Règlement de comptes';
 
   return (
-    <div className="relative overflow-hidden rounded-2xl bg-red-600 shadow-sm mb-2">
+    <div className="relative overflow-hidden rounded-3xl bg-red-600 mb-2">
       <div
         className="absolute inset-y-0 right-0 w-20 flex flex-col items-center justify-center text-white cursor-pointer active:bg-red-700 transition-colors"
         onClick={() => onDelete(exp.id)}
@@ -61,7 +61,7 @@ function ExpenseCard({ exp, user, onDelete, onEdit, t }) {
       </div>
 
       <div
-        className="swipe-panel material-card p-4 flex items-center gap-4 relative bg-[#1c1b1f] border border-[#49454f]/30 transition-transform duration-200 z-10 w-full rounded-2xl"
+        className="swipe-panel material-card p-4 flex items-center gap-4 relative transition-transform duration-200 z-10 w-full"
         {...swipeHandlers}
       >
         <div className="w-10 h-10 rounded-full bg-[#2b2930] flex items-center justify-center shrink-0 border border-[#49454f]/50">
