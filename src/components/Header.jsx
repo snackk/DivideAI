@@ -32,35 +32,41 @@ export default function Header({
   };
 
   return (
-    <header className="p-4 flex items-center justify-between sticky top-0 bg-[#1c1b1f] z-10 shadow-sm">
-      <div className="flex items-center gap-2">
+    <header className="safe-area-top sticky top-0 bg-[#1c1b1f]/75 backdrop-blur-xl z-40 px-4 pb-4 flex items-center justify-between border-b border-[#49454f]/25">
+      <div className="flex items-center gap-3 min-w-0">
         {isFriendDetails && (
           <button
-            className="text-[#e6e1e5] p-2 -ml-2 rounded-full hover:bg-[#2b2930] transition-colors"
+            className="text-[#e6e1e5] p-2 -ml-2 rounded-full hover:bg-[#2b2930] transition-colors shrink-0"
             onClick={onBack}
           >
             <i className="fas fa-arrow-left text-lg"></i>
           </button>
         )}
         {isFriendDetails ? (
-          <div className="text-xl font-medium flex items-center gap-2">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-[#49454f] flex items-center justify-center overflow-hidden border border-[#938f99]/30 shrink-0">
-                {friend?.photoURL ? (
-                  <img src={friend.photoURL} className="w-full h-full object-cover" />
-                ) : (
-                  <i className="fas fa-user text-xs"></i>
-                )}
-              </div>
-              <span className="text-lg truncate max-w-[150px] sm:max-w-[200px]">{friend?.displayName}</span>
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-full bg-[#49454f] flex items-center justify-center overflow-hidden border border-[#938f99]/30 shrink-0">
+              {friend?.photoURL ? (
+                <img src={friend.photoURL} className="w-full h-full object-cover" />
+              ) : (
+                <i className="fas fa-user text-sm"></i>
+              )}
             </div>
+            <span className="text-lg font-bold truncate max-w-[150px] sm:max-w-[200px]">{friend?.displayName}</span>
           </div>
         ) : (
-          <div className="text-xl font-medium flex items-center gap-2">{getTitle()}</div>
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#e8dbff] to-[#b39ddb] flex items-center justify-center shadow-lg shadow-[#d0bcff]/25 shrink-0">
+              <i className="fas fa-wallet text-[#381e72] text-lg"></i>
+            </div>
+            <div className="min-w-0">
+              <h2 className="text-xl font-bold leading-tight tracking-tight truncate">{getTitle()}</h2>
+              <p className="text-[9px] text-[#938f99] uppercase tracking-[0.2em] font-medium">DivideAI</p>
+            </div>
+          </div>
         )}
       </div>
 
-      <div className="flex gap-4 items-center flex-1 justify-end">
+      <div className="flex gap-4 items-center justify-end shrink-0">
         {searchOpen && (
           <div className="flex items-center bg-[#2b2930] rounded-full px-3 py-1 w-full max-w-[200px] transition-all">
             <input
@@ -85,7 +91,7 @@ export default function Header({
 
         {!isFriendDetails && (
           <div
-            className="w-8 h-8 rounded-full bg-[#49454f] overflow-hidden border border-[#938f99] cursor-pointer"
+            className="w-9 h-9 rounded-full bg-[#49454f] overflow-hidden border border-[#938f99]/40 cursor-pointer active:scale-90 transition-transform"
             onClick={onAccountClick}
           >
             {user?.photoURL ? (

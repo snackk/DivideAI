@@ -213,7 +213,7 @@ export default function App() {
         onAccountClick={() => switchView('account')}
       />
 
-      <main className="flex-1 overflow-y-auto p-4 space-y-4 pb-24">
+      <main className="flex-1 overflow-y-auto p-4 space-y-4 pb-32">
         {renderView()}
       </main>
 

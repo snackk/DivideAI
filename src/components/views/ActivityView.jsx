@@ -18,7 +18,7 @@ export default function ActivityView({ expenses, friends, user, searchTerm, onOp
   if (filteredExpenses.length === 0) {
     return (
       <div className="p-12 text-center opacity-40">
-        <i className="fas fa-search text-5xl mb-4"></i>
+        <i className="fas fa-search text-5xl mb-4 text-[#d0bcff]"></i>
         <p>{t('noActivityFound')}</p>
       </div>
     );
@@ -49,7 +49,7 @@ export default function ActivityView({ expenses, friends, user, searchTerm, onOp
   if (cards.length === 0) {
     return (
       <div className="p-12 text-center opacity-40">
-        <i className="fas fa-check-circle text-5xl mb-4"></i>
+        <i className="fas fa-check-circle text-5xl mb-4 text-green-400"></i>
         <p>{t('allClear')}</p>
       </div>
     );
@@ -83,7 +83,7 @@ function ActivityCard({ friendEmail, friend, friendExpenses, groupBalance, onOpe
   return (
     <div
       {...longPressHandlers}
-      className="flex items-center gap-4 p-4 bg-[#2b2930] rounded-2xl cursor-pointer active:scale-[0.98] transition-transform shadow-sm select-none"
+      className="material-card flex items-center gap-4 p-4 cursor-pointer select-none"
     >
       <div className="w-12 h-12 rounded-full bg-[#49454f] flex items-center justify-center overflow-hidden border border-[#938f99]/20 shrink-0 pointer-events-none">
         {friend.photoURL ? (
@@ -99,9 +99,9 @@ function ActivityCard({ friendEmail, friend, friendExpenses, groupBalance, onOpe
         </p>
       </div>
       <div className="text-right shrink-0 pointer-events-none">
-        <p className={`text-sm font-bold ${groupBalance >= 0 ? 'text-green-400' : 'text-orange-400'}`}>
+        <span className={`status-badge ${groupBalance >= 0 ? 'bg-green-500/20 text-green-400' : 'bg-orange-500/20 text-orange-400'}`}>
           {groupBalance >= 0 ? '+' : ''}{groupBalance.toFixed(2)}€
-        </p>
+        </span>
       </div>
     </div>
   );
