@@ -67,6 +67,9 @@
   "settleTo": "à",
   "settleToast": "Comptes réglés !",
   "settleDescription": "Règlement de comptes",
+  "friendSearchPlaceholder": "Rechercher un ami...",
+  "friendSearchNoResults": "Aucun ami trouvé.",
+  "friendSearchSelectHint": "Sélectionne un ami dans la liste.",
   "delete": "Supprimer",
   "allPaid": "Tout payé"
 }
