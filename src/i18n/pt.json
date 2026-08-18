@@ -67,6 +67,9 @@
   "settleTo": "a",
   "settleToast": "Contas liquidadas!",
   "settleDescription": "Liquidação de Contas",
+  "friendSearchPlaceholder": "Pesquisar amigo...",
+  "friendSearchNoResults": "Nenhum amigo encontrado.",
+  "friendSearchSelectHint": "Seleciona um amigo da lista.",
   "delete": "Apagar",
   "allPaid": "Tudo Pago"
 }

@@ -67,6 +67,9 @@
   "settleTo": "to",
   "settleToast": "Settled!",
   "settleDescription": "Settlement",
+  "friendSearchPlaceholder": "Search friend...",
+  "friendSearchNoResults": "No friends found.",
+  "friendSearchSelectHint": "Select a friend from the list.",
   "delete": "Delete",
   "allPaid": "All Paid"
 }

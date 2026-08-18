@@ -101,9 +101,10 @@ export default function App() {
 
   const handleExpenseSubmit = useCallback(async (formData) => {
     if (!user) return;
+    const normalizedAmount = String(formData.amount).replace(',', '.');
     const data = {
       description: formData.description,
-      amount: parseFloat(formData.amount),
+      amount: parseFloat(normalizedAmount),
       date: formData.date,
       creatorEmail: user.email,
       friendEmail: formData.friendEmail,

@@ -24,6 +24,15 @@ body {
     padding-top: calc(env(safe-area-inset-top) + 16px);
 }
 
+@keyframes dropdownFadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.dropdown-fade-in {
+    animation: dropdownFadeIn 0.12s ease-out;
+}
+
 .safe-area-bottom {
     padding-bottom: calc(env(safe-area-inset-bottom) + 10px);
 }
