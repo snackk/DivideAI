@@ -11,6 +11,12 @@
     --md-sys-color-secondary-container: #49454f;
 }
 
+/* Dark canvas behind everything (status bar / safe areas / overscroll) so it never falls back to white. */
+html {
+    color-scheme: dark;
+    background-color: var(--md-sys-color-surface);
+}
+
 body {
     font-family: 'Roboto', sans-serif;
     background: radial-gradient(ellipse 120% 60% at 50% 0%, #26232b 0%, var(--md-sys-color-surface) 45%) fixed;
