@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSwipe } from '../../utils/gestures';
 
@@ -47,17 +47,51 @@ export default function FriendDetailsView({ expenses, friends, user, selectedFri
 
 function ExpenseCard({ exp, user, onDelete, onEdit, t }) {
   const swipeHandlers = useSwipe();
+  const panelRef = useRef(null);
   const [confirming, setConfirming] = useState(false);
   const iPaid = exp.paidByEmail === user.email;
   const displayAmount = exp.splitType === 'equal' ? exp.amount / 2 : exp.amount;
   const isSettle = exp.description === 'Liquidação de Contas' || exp.description === 'Settlement' || exp.description === 'Règlement de comptes';
 
+  // useSwipe drives the open/closed position by writing the same inline
+  // transform directly on the swipe-panel element (see src/utils/gestures.js:
+  // 'translateX(-80px)' open, 'translateX(0)' closed). Keyboard focus entering
+  // the delete/confirm/cancel buttons underneath needs to produce that same
+  // visual state, since those buttons are otherwise fully covered by this panel.
+  const setPanelOpen = (open) => {
+    const el = panelRef.current;
+    if (!el) return;
+    el.style.transition = 'transform 0.2s ease-out';
+    el.style.transform = open ? 'translateX(-80px)' : 'translateX(0)';
+  };
+
+  const handleActionsFocus = () => setPanelOpen(true);
+
+  const handleActionsBlur = (e) => {
+    // Only close once focus leaves the whole delete/confirm/cancel group,
+    // not when it moves between the buttons inside it.
+    if (!e.currentTarget.contains(e.relatedTarget)) {
+      setPanelOpen(false);
+    }
+  };
+
+  const handleActionsKeyDown = (e) => {
+    if (e.key === 'Escape' && confirming) {
+      setConfirming(false);
+    }
+  };
+
   return (
     <div className="relative overflow-hidden rounded-3xl bg-red-600 mb-2">
-      <div className="absolute inset-y-0 right-0 w-20 flex items-center justify-center text-white select-none">
+      <div
+        className="absolute inset-y-0 right-0 w-20 flex items-center justify-center text-white select-none"
+        onFocus={handleActionsFocus}
+        onBlur={handleActionsBlur}
+        onKeyDown={handleActionsKeyDown}
+      >
         {confirming ? (
           <div className="flex flex-col items-center gap-1">
-            <span className="text-[7px] font-bold uppercase tracking-tight leading-tight text-center px-1">
+            <span className="text-[9px] font-bold uppercase tracking-tight leading-[1.1] text-center px-1">
               {t('confirmDelete')}
             </span>
             <div className="flex gap-1">
@@ -68,7 +102,7 @@ function ExpenseCard({ exp, user, onDelete, onEdit, t }) {
                   setConfirming(false);
                   onDelete(exp.id);
                 }}
-                className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center active:bg-white/30 transition-colors"
+                className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center active:bg-white/30 transition-colors focus:outline focus:outline-2 focus:outline-white"
               >
                 <i className="fas fa-check text-xs"></i>
               </button>
@@ -76,7 +110,7 @@ function ExpenseCard({ exp, user, onDelete, onEdit, t }) {
                 type="button"
                 aria-label={t('cancel')}
                 onClick={() => setConfirming(false)}
-                className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center active:bg-white/30 transition-colors"
+                className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center active:bg-white/30 transition-colors focus:outline focus:outline-2 focus:outline-white"
               >
                 <i className="fas fa-times text-xs"></i>
               </button>
@@ -87,7 +121,7 @@ function ExpenseCard({ exp, user, onDelete, onEdit, t }) {
             type="button"
             aria-label={t('delete')}
             onClick={() => setConfirming(true)}
-            className="w-full h-full flex flex-col items-center justify-center cursor-pointer active:bg-red-700 transition-colors"
+            className="w-full h-full flex flex-col items-center justify-center cursor-pointer active:bg-red-700 transition-colors focus:outline focus:outline-2 focus:outline-white"
           >
             <i className="fas fa-trash mb-1 text-lg"></i>
             <span className="text-[9px] font-bold uppercase tracking-wider">{t('delete')}</span>
@@ -96,6 +130,7 @@ function ExpenseCard({ exp, user, onDelete, onEdit, t }) {
       </div>
 
       <div
+        ref={panelRef}
         className="swipe-panel material-card p-4 flex items-center gap-4 relative transition-transform duration-200 z-10 w-full select-none"
         {...swipeHandlers}
       >
