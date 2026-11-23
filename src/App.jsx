@@ -194,7 +194,7 @@ export default function App() {
           />
         );
       default:
-        return <div className="p-12 text-center opacity-40 uppercase text-xs">{currentView} em breve</div>;
+        return <div className="p-12 text-center opacity-40 uppercase text-xs">{t('comingSoon', { view: currentView })}</div>;
     }
   };
 

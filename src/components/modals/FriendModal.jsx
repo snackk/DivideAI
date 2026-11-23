@@ -23,12 +23,12 @@ export default function FriendModal({ onSubmit, onClose }) {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-xs text-[#d0bcff] mb-1 ml-1">{t('lblFriendEmail')}</label>
-            <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="exemplo@gmail.com"
+            <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t('friendEmailPlaceholder')}
               className="w-full bg-[#2b2930] border border-[#49454f] rounded-2xl p-3 focus:border-[#d0bcff] outline-none" />
           </div>
           <div>
             <label className="block text-xs text-[#d0bcff] mb-1 ml-1">{t('lblFriendName')}</label>
-            <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Como o identificas?"
+            <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder={t('friendNamePlaceholder')}
               className="w-full bg-[#2b2930] border border-[#49454f] rounded-2xl p-3 focus:border-[#d0bcff] outline-none" />
           </div>
           <button type="submit" className="w-full bg-[#d0bcff] text-[#381e72] font-bold py-4 rounded-2xl mt-6 uppercase tracking-wider text-xs active:scale-[0.98] transition-transform">

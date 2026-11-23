@@ -74,7 +74,7 @@ export default function Header({
               type="text"
               value={searchTerm}
               onChange={(e) => onSearchChange(e.target.value.toLowerCase())}
-              placeholder="Procurar..."
+              placeholder={t('searchPlaceholder')}
               autoFocus
               className="bg-transparent border-none outline-none text-xs w-full text-[#e6e1e5] placeholder-[#938f99]"
             />

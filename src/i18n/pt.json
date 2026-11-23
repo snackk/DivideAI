@@ -76,6 +76,10 @@
   "cancel": "Cancelar",
   "allPaid": "Tudo Pago",
   "close": "Fechar",
-  "back": "Voltar"
+  "back": "Voltar",
+  "searchPlaceholder": "Procurar...",
+  "friendEmailPlaceholder": "exemplo@gmail.com",
+  "friendNamePlaceholder": "Como o identificas?",
+  "comingSoon": "{{view}} em breve"
 }
 
