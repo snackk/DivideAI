@@ -3,6 +3,10 @@ import { useTranslation } from 'react-i18next';
 import { useSwipe } from '../../utils/gestures';
 import { formatCurrency } from '../../utils/formatCurrency';
 
+function getDateLocale(language) {
+  return language === 'pt' ? 'pt-PT' : language === 'fr' ? 'fr-FR' : 'en-US';
+}
+
 export default function FriendDetailsView({ expenses, friends, user, selectedFriendEmail, onDelete, onEdit }) {
   const { t, i18n } = useTranslation();
 
@@ -21,7 +25,7 @@ export default function FriendDetailsView({ expenses, friends, user, selectedFri
   const groupedByMonth = {};
   friendExpenses.forEach((exp) => {
     const d = new Date(exp.date);
-    const locale = i18n.language === 'pt' ? 'pt-PT' : i18n.language === 'fr' ? 'fr-FR' : 'en-US';
+    const locale = getDateLocale(i18n.language);
     const monthName = d.toLocaleDateString(locale, { month: 'long' });
     const groupKey = `${monthName.charAt(0).toUpperCase() + monthName.slice(1)} ${d.getFullYear()}`;
     if (!groupedByMonth[groupKey]) groupedByMonth[groupKey] = [];
@@ -210,7 +214,7 @@ function ExpenseCard({ exp, user, onDelete, onEdit, t }) {
 
         <div className="flex-1 min-w-0 select-text">
           <h5 className={`text-sm font-medium ${isSettle ? 'text-[#d0bcff]' : 'text-[#e6e1e5]'} truncate`}>{exp.description}</h5>
-          <p className="text-[10px] text-[#938f99]">{new Date(exp.date).toLocaleDateString()}</p>
+          <p className="text-[10px] text-[#938f99]">{new Date(exp.date).toLocaleDateString(getDateLocale(i18n.language))}</p>
         </div>
 
         <div className="text-right shrink-0 pr-6 select-text">
