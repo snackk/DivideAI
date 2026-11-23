@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSwipe } from '../../utils/gestures';
+import { formatCurrency } from '../../utils/formatCurrency';
 
 export default function FriendDetailsView({ expenses, friends, user, selectedFriendEmail, onDelete, onEdit }) {
   const { t, i18n } = useTranslation();
@@ -46,6 +47,7 @@ export default function FriendDetailsView({ expenses, friends, user, selectedFri
 }
 
 function ExpenseCard({ exp, user, onDelete, onEdit, t }) {
+  const { i18n } = useTranslation();
   const swipeHandlers = useSwipe();
   const panelRef = useRef(null);
   const deleteButtonRef = useRef(null);
@@ -212,9 +214,9 @@ function ExpenseCard({ exp, user, onDelete, onEdit, t }) {
         </div>
 
         <div className="text-right shrink-0 pr-6 select-text">
-          <p className="text-[#e6e1e5] font-bold text-sm">{exp.amount.toFixed(2)}€</p>
+          <p className="text-[#e6e1e5] font-bold text-sm">{formatCurrency(exp.amount, i18n.language)}</p>
           <p className={`text-[10px] ${iPaid ? 'text-green-400' : 'text-orange-400'} font-medium`}>
-            {iPaid ? t('youReceive') : t('youOwe')}{displayAmount.toFixed(2)}€
+            {iPaid ? t('youReceive') : t('youOwe')}{formatCurrency(displayAmount, i18n.language)}
           </p>
         </div>
 

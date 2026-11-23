@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { useLongPress } from '../../utils/gestures';
 import { calculateFriendBalance } from '../../utils/balance';
+import { formatCurrency } from '../../utils/formatCurrency';
 
 export default function ActivityView({ expenses, friends, user, searchTerm, onOpenFriendDetails, onOpenSettle }) {
   const { t } = useTranslation();
@@ -73,7 +74,7 @@ export default function ActivityView({ expenses, friends, user, searchTerm, onOp
 }
 
 function ActivityCard({ friendEmail, friend, friendExpenses, groupBalance, onOpenFriendDetails, onOpenSettle }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const longPressHandlers = useLongPress(
     () => onOpenSettle(friendEmail, groupBalance),
@@ -110,7 +111,7 @@ function ActivityCard({ friendEmail, friend, friendExpenses, groupBalance, onOpe
       </div>
       <div className="text-right shrink-0 pointer-events-none">
         <span className={`status-badge ${groupBalance >= 0 ? 'bg-green-500/20 text-green-400' : 'bg-orange-500/20 text-orange-400'}`}>
-          {groupBalance >= 0 ? '+' : ''}{groupBalance.toFixed(2)}€
+          {groupBalance >= 0 ? '+' : ''}{formatCurrency(groupBalance, i18n.language)}
         </span>
       </div>
     </div>

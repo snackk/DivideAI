@@ -1,9 +1,10 @@
 import { useTranslation } from 'react-i18next';
+import { formatCurrency } from '../../utils/formatCurrency';
 
 export default function SettleModal({ settleData, user, onConfirm, onClose }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { balance, friendName } = settleData;
-  const absBal = Math.abs(balance).toFixed(2);
+  const absBal = formatCurrency(Math.abs(balance), i18n.language);
 
   return (
     <div className="fixed inset-0 z-[60] bg-black/70 flex items-end sm:items-center justify-center p-0 sm:p-4">
@@ -17,11 +18,11 @@ export default function SettleModal({ settleData, user, onConfirm, onClose }) {
         <div className="text-center mb-6 text-[#e6e1e5] p-4 bg-[#2b2930] rounded-2xl border border-[#49454f]">
           {balance < 0 ? (
             <span>
-              {t('settleYouPay')} <strong className="text-[#d0bcff] text-xl block my-2">{absBal}€</strong> {t('settleTo')} <strong>{friendName}</strong>?
+              {t('settleYouPay')} <strong className="text-[#d0bcff] text-xl block my-2">{absBal}</strong> {t('settleTo')} <strong>{friendName}</strong>?
             </span>
           ) : (
             <span>
-              {t('settleFriendPays')} <strong>{friendName}</strong> {t('settlePaidYou')} <strong className="text-[#d0bcff] text-xl block my-2">{absBal}€</strong>?
+              {t('settleFriendPays')} <strong>{friendName}</strong> {t('settlePaidYou')} <strong className="text-[#d0bcff] text-xl block my-2">{absBal}</strong>?
             </span>
           )}
         </div>
