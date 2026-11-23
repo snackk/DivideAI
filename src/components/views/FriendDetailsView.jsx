@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSwipe } from '../../utils/gestures';
 
@@ -46,18 +47,52 @@ export default function FriendDetailsView({ expenses, friends, user, selectedFri
 
 function ExpenseCard({ exp, user, onDelete, onEdit, t }) {
   const swipeHandlers = useSwipe();
+  const [confirming, setConfirming] = useState(false);
   const iPaid = exp.paidByEmail === user.email;
   const displayAmount = exp.splitType === 'equal' ? exp.amount / 2 : exp.amount;
   const isSettle = exp.description === 'Liquidação de Contas' || exp.description === 'Settlement' || exp.description === 'Règlement de comptes';
 
   return (
     <div className="relative overflow-hidden rounded-3xl bg-red-600 mb-2">
-      <div
-        className="absolute inset-y-0 right-0 w-20 flex flex-col items-center justify-center text-white cursor-pointer active:bg-red-700 transition-colors select-none"
-        onClick={() => onDelete(exp.id)}
-      >
-        <i className="fas fa-trash mb-1 text-lg"></i>
-        <span className="text-[9px] font-bold uppercase tracking-wider">{t('delete')}</span>
+      <div className="absolute inset-y-0 right-0 w-20 flex items-center justify-center text-white select-none">
+        {confirming ? (
+          <div className="flex flex-col items-center gap-1">
+            <span className="text-[7px] font-bold uppercase tracking-tight leading-tight text-center px-1">
+              {t('confirmDelete')}
+            </span>
+            <div className="flex gap-1">
+              <button
+                type="button"
+                aria-label={t('confirm')}
+                onClick={() => {
+                  setConfirming(false);
+                  onDelete(exp.id);
+                }}
+                className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center active:bg-white/30 transition-colors"
+              >
+                <i className="fas fa-check text-xs"></i>
+              </button>
+              <button
+                type="button"
+                aria-label={t('cancel')}
+                onClick={() => setConfirming(false)}
+                className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center active:bg-white/30 transition-colors"
+              >
+                <i className="fas fa-times text-xs"></i>
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            type="button"
+            aria-label={t('delete')}
+            onClick={() => setConfirming(true)}
+            className="w-full h-full flex flex-col items-center justify-center cursor-pointer active:bg-red-700 transition-colors"
+          >
+            <i className="fas fa-trash mb-1 text-lg"></i>
+            <span className="text-[9px] font-bold uppercase tracking-wider">{t('delete')}</span>
+          </button>
+        )}
       </div>
 
       <div

@@ -71,6 +71,9 @@
   "friendSearchNoResults": "No friends found.",
   "friendSearchSelectHint": "Select a friend from the list.",
   "delete": "Delete",
+  "confirmDelete": "Confirm delete?",
+  "confirm": "Confirm",
+  "cancel": "Cancel",
   "allPaid": "All Paid",
   "close": "Close",
   "back": "Back"
