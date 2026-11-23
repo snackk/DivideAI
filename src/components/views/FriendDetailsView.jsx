@@ -92,7 +92,26 @@ function ExpenseCard({ exp, user, onDelete, onEdit, t }) {
     }
   }, [confirming]);
 
-  const handleActionsFocus = () => setPanelOpen(true);
+  const handleActionsFocus = () => {
+    // Defensive reset: any stale suppress flag from an earlier click that
+    // never actually focused its button (see handleButtonClick below) must
+    // never carry over into a later, unrelated focus/blur cycle on this row.
+    suppressNextBlurCloseRef.current = false;
+    setPanelOpen(true);
+  };
+
+  // Only worth suppressing the next blur's close-on-unmount logic when the
+  // clicked button was actually the focused element: in Safari-style UAs, a
+  // mouse click on a <button> does not focus it by default, so unmounting
+  // it fires no blur at all — setting the flag in that case would leave it
+  // stuck "true" with nothing left to consume it, and a later *real*
+  // focus-out on this row would then be wrongly swallowed.
+  const handleButtonClick = (e, run) => {
+    if (document.activeElement === e.currentTarget) {
+      suppressNextBlurCloseRef.current = true;
+    }
+    run();
+  };
 
   const handleActionsBlur = (e) => {
     // Delete <-> confirming swaps unmount the focused button, which makes
@@ -118,15 +137,9 @@ function ExpenseCard({ exp, user, onDelete, onEdit, t }) {
     }
   };
 
-  const handleDeleteClick = () => {
-    suppressNextBlurCloseRef.current = true;
-    setConfirming(true);
-  };
+  const handleDeleteClick = (e) => handleButtonClick(e, () => setConfirming(true));
 
-  const handleCancelClick = () => {
-    suppressNextBlurCloseRef.current = true;
-    setConfirming(false);
-  };
+  const handleCancelClick = (e) => handleButtonClick(e, () => setConfirming(false));
 
   return (
     <div className="relative overflow-hidden rounded-3xl bg-red-600 mb-2">
@@ -146,11 +159,12 @@ function ExpenseCard({ exp, user, onDelete, onEdit, t }) {
                 ref={confirmButtonRef}
                 type="button"
                 aria-label={t('confirm')}
-                onClick={() => {
-                  suppressNextBlurCloseRef.current = true;
-                  setConfirming(false);
-                  onDelete(exp.id);
-                }}
+                onClick={(e) =>
+                  handleButtonClick(e, () => {
+                    setConfirming(false);
+                    onDelete(exp.id);
+                  })
+                }
                 className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center active:bg-white/30 transition-colors focus:outline focus:outline-2 focus:outline-white"
               >
                 <i className="fas fa-check text-xs"></i>
