@@ -72,12 +72,12 @@ function ExpenseCard({ exp, user, onDelete, onEdit, t }) {
           )}
         </div>
 
-        <div className="flex-1 min-w-0 pointer-events-none select-text">
+        <div className="flex-1 min-w-0 select-text">
           <h5 className={`text-sm font-medium ${isSettle ? 'text-[#d0bcff]' : 'text-[#e6e1e5]'} truncate`}>{exp.description}</h5>
           <p className="text-[10px] text-[#938f99]">{new Date(exp.date).toLocaleDateString()}</p>
         </div>
 
-        <div className="text-right shrink-0 pr-6 pointer-events-none select-text">
+        <div className="text-right shrink-0 pr-6 select-text">
           <p className="text-[#e6e1e5] font-bold text-sm">{exp.amount.toFixed(2)}€</p>
           <p className={`text-[10px] ${iPaid ? 'text-green-400' : 'text-orange-400'} font-medium`}>
             {iPaid ? t('youReceive') : t('youOwe')}{displayAmount.toFixed(2)}€
