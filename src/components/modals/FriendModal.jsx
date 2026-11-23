@@ -17,7 +17,7 @@ export default function FriendModal({ onSubmit, onClose }) {
         <div className="w-12 h-1.5 bg-[#49454f]/80 rounded-full mx-auto mb-6 sm:hidden"></div>
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-xl font-bold">{t('modalAddFriend')}</h3>
-          <button className="text-[#938f99] p-2 hover:text-[#e6e1e5]" onClick={onClose}><i className="fas fa-times"></i></button>
+          <button className="text-[#938f99] p-2 hover:text-[#e6e1e5]" onClick={onClose} aria-label={t('close')}><i className="fas fa-times"></i></button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">

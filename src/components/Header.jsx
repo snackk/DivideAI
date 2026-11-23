@@ -38,6 +38,7 @@ export default function Header({
           <button
             className="text-[#e6e1e5] p-2 -ml-2 rounded-full hover:bg-[#2b2930] transition-colors shrink-0 select-none"
             onClick={onBack}
+            aria-label={t('back')}
           >
             <i className="fas fa-arrow-left text-lg"></i>
           </button>
@@ -77,7 +78,7 @@ export default function Header({
               autoFocus
               className="bg-transparent border-none outline-none text-xs w-full text-[#e6e1e5] placeholder-[#938f99]"
             />
-            <button className="select-none" onClick={onSearchClose}>
+            <button className="select-none" onClick={onSearchClose} aria-label={t('close')}>
               <i className="fas fa-times text-[#938f99] text-xs"></i>
             </button>
           </div>

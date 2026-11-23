@@ -71,6 +71,8 @@
   "friendSearchNoResults": "Nenhum amigo encontrado.",
   "friendSearchSelectHint": "Seleciona um amigo da lista.",
   "delete": "Apagar",
-  "allPaid": "Tudo Pago"
+  "allPaid": "Tudo Pago",
+  "close": "Fechar",
+  "back": "Voltar"
 }
 

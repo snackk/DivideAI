@@ -71,6 +71,8 @@
   "friendSearchNoResults": "No friends found.",
   "friendSearchSelectHint": "Select a friend from the list.",
   "delete": "Delete",
-  "allPaid": "All Paid"
+  "allPaid": "All Paid",
+  "close": "Close",
+  "back": "Back"
 }
 
