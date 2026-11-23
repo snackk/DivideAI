@@ -53,7 +53,7 @@ function ExpenseCard({ exp, user, onDelete, onEdit, t }) {
   return (
     <div className="relative overflow-hidden rounded-3xl bg-red-600 mb-2">
       <div
-        className="absolute inset-y-0 right-0 w-20 flex flex-col items-center justify-center text-white cursor-pointer active:bg-red-700 transition-colors"
+        className="absolute inset-y-0 right-0 w-20 flex flex-col items-center justify-center text-white cursor-pointer active:bg-red-700 transition-colors select-none"
         onClick={() => onDelete(exp.id)}
       >
         <i className="fas fa-trash mb-1 text-lg"></i>
@@ -61,7 +61,7 @@ function ExpenseCard({ exp, user, onDelete, onEdit, t }) {
       </div>
 
       <div
-        className="swipe-panel material-card p-4 flex items-center gap-4 relative transition-transform duration-200 z-10 w-full"
+        className="swipe-panel material-card p-4 flex items-center gap-4 relative transition-transform duration-200 z-10 w-full select-none"
         {...swipeHandlers}
       >
         <div className="w-10 h-10 rounded-full bg-[#2b2930] flex items-center justify-center shrink-0 border border-[#49454f]/50">
@@ -72,12 +72,12 @@ function ExpenseCard({ exp, user, onDelete, onEdit, t }) {
           )}
         </div>
 
-        <div className="flex-1 min-w-0 pointer-events-none">
+        <div className="flex-1 min-w-0 pointer-events-none select-text">
           <h5 className={`text-sm font-medium ${isSettle ? 'text-[#d0bcff]' : 'text-[#e6e1e5]'} truncate`}>{exp.description}</h5>
           <p className="text-[10px] text-[#938f99]">{new Date(exp.date).toLocaleDateString()}</p>
         </div>
 
-        <div className="text-right shrink-0 pr-6 pointer-events-none">
+        <div className="text-right shrink-0 pr-6 pointer-events-none select-text">
           <p className="text-[#e6e1e5] font-bold text-sm">{exp.amount.toFixed(2)}€</p>
           <p className={`text-[10px] ${iPaid ? 'text-green-400' : 'text-orange-400'} font-medium`}>
             {iPaid ? t('youReceive') : t('youOwe')}{displayAmount.toFixed(2)}€
@@ -87,7 +87,7 @@ function ExpenseCard({ exp, user, onDelete, onEdit, t }) {
         {exp.creatorEmail === user.email && !isSettle && (
           <button
             onClick={(e) => { e.stopPropagation(); onEdit(exp); }}
-            className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-[#938f99] hover:text-[#d0bcff] active:scale-90 transition-transform"
+            className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-[#938f99] hover:text-[#d0bcff] active:scale-90 transition-transform select-none"
           >
             <i className="fas fa-pen text-sm"></i>
           </button>
