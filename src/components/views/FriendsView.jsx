@@ -39,9 +39,10 @@ export default function FriendsView({ friends, expenses, user, onOpenFriendDetai
           friends.map((f) => {
             const bal = calculateFriendBalance(expenses, f.email, user.email);
             return (
-              <div
+              <button
+                type="button"
                 key={f.id}
-                className="material-card p-4 flex items-center gap-4 cursor-pointer"
+                className="material-card p-4 flex items-center gap-4 cursor-pointer w-full text-left"
                 onClick={() => onOpenFriendDetails(f.email)}
               >
                 <div className="w-12 h-12 rounded-full bg-[#49454f] overflow-hidden flex items-center justify-center shrink-0">
@@ -60,7 +61,7 @@ export default function FriendsView({ friends, expenses, user, onOpenFriendDetai
                     {bal > 0 ? `+${bal.toFixed(2)}€` : bal < 0 ? `${bal.toFixed(2)}€` : t('allPaid')}
                   </span>
                 </div>
-              </div>
+              </button>
             );
           })
         )}

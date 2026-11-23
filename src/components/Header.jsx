@@ -90,7 +90,8 @@ export default function Header({
         )}
 
         {!isFriendDetails && (
-          <div
+          <button
+            type="button"
             className="w-9 h-9 rounded-full bg-[#49454f] overflow-hidden border border-[#938f99]/40 cursor-pointer active:scale-90 transition-transform select-none"
             onClick={onAccountClick}
           >
@@ -99,7 +100,7 @@ export default function Header({
             ) : (
               <i className="fas fa-user text-xs flex items-center justify-center h-full"></i>
             )}
-          </div>
+          </button>
         )}
       </div>
     </header>

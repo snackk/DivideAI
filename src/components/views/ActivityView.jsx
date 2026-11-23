@@ -80,9 +80,19 @@ function ActivityCard({ friendEmail, friend, friendExpenses, groupBalance, onOpe
     () => onOpenFriendDetails(friendEmail),
   );
 
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      if (e.key === ' ') e.preventDefault();
+      onOpenFriendDetails(friendEmail);
+    }
+  };
+
   return (
     <div
       {...longPressHandlers}
+      role="button"
+      tabIndex={0}
+      onKeyDown={handleKeyDown}
       className="material-card flex items-center gap-4 p-4 cursor-pointer select-none"
     >
       <div className="w-12 h-12 rounded-full bg-[#49454f] flex items-center justify-center overflow-hidden border border-[#938f99]/20 shrink-0 pointer-events-none">
