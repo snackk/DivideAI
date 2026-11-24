@@ -103,13 +103,13 @@ function ActivityCard({ friendEmail, friend, friendExpenses, groupBalance, onOpe
           <i className="fas fa-user text-lg"></i>
         )}
       </div>
-      <div className="flex-1 min-w-0 pointer-events-none">
+      <div className="flex-1 min-w-0 select-text">
         <h4 className="font-bold text-base text-[#e6e1e5] truncate">{friend.displayName}</h4>
         <p className="text-xs text-[#938f99]">
           {friendExpenses.length} {friendExpenses.length === 1 ? t('expenses_one') : t('expenses_other')}
         </p>
       </div>
-      <div className="text-right shrink-0 pointer-events-none">
+      <div className="text-right shrink-0 select-text">
         <span className={`status-badge ${groupBalance >= 0 ? 'bg-green-500/20 text-green-400' : 'bg-orange-500/20 text-orange-400'}`}>
           {groupBalance >= 0 ? '+' : ''}{formatCurrency(groupBalance, i18n.language)}
         </span>

@@ -54,8 +54,8 @@ export default function FriendsView({ friends, expenses, user, onOpenFriendDetai
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h4 className="font-bold text-base text-[#e6e1e5] truncate">{f.displayName}</h4>
-                  <p className="text-[10px] text-[#938f99] truncate">{f.email}</p>
+                  <h4 className="font-bold text-base text-[#e6e1e5] truncate select-text">{f.displayName}</h4>
+                  <p className="text-[10px] text-[#938f99] truncate select-text">{f.email}</p>
                 </div>
                 <div className="text-right shrink-0">
                   <span className={`status-badge ${bal > 0 ? 'bg-green-500/20 text-green-400' : bal < 0 ? 'bg-orange-500/20 text-orange-400' : 'bg-[#49454f] text-[#938f99]'}`}>
