@@ -38,7 +38,7 @@ export default function BottomNav({ currentView, onSwitchView, onFabClick }) {
       <nav className="bg-[#2b2930]/95 backdrop-blur-xl rounded-[28px] border border-[#49454f]/30 shadow-[0_12px_32px_-8px_rgba(0,0,0,0.55)] h-20 flex items-center px-2">
         {navItems.map((item) => <NavButton key={item.view} item={item} />)}
 
-        <div className="flex-1 flex justify-center items-center -mt-8">
+        <div className="flex-1 flex justify-center items-center">
           <button
             onClick={onFabClick}
             disabled={isAccount}
