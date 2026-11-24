@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { useLongPress } from '../../utils/gestures';
 import { calculateFriendBalance } from '../../utils/balance';
+import { formatCurrency } from '../../utils/formatCurrency';
 
 export default function ActivityView({ expenses, friends, user, searchTerm, onOpenFriendDetails, onOpenSettle }) {
   const { t } = useTranslation();
@@ -73,16 +74,26 @@ export default function ActivityView({ expenses, friends, user, searchTerm, onOp
 }
 
 function ActivityCard({ friendEmail, friend, friendExpenses, groupBalance, onOpenFriendDetails, onOpenSettle }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const longPressHandlers = useLongPress(
     () => onOpenSettle(friendEmail, groupBalance),
     () => onOpenFriendDetails(friendEmail),
   );
 
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      if (e.key === ' ') e.preventDefault();
+      onOpenFriendDetails(friendEmail);
+    }
+  };
+
   return (
     <div
       {...longPressHandlers}
+      role="button"
+      tabIndex={0}
+      onKeyDown={handleKeyDown}
       className="material-card flex items-center gap-4 p-4 cursor-pointer select-none"
     >
       <div className="w-12 h-12 rounded-full bg-[#49454f] flex items-center justify-center overflow-hidden border border-[#938f99]/20 shrink-0 pointer-events-none">
@@ -92,15 +103,15 @@ function ActivityCard({ friendEmail, friend, friendExpenses, groupBalance, onOpe
           <i className="fas fa-user text-lg"></i>
         )}
       </div>
-      <div className="flex-1 min-w-0 pointer-events-none">
+      <div className="flex-1 min-w-0 select-text">
         <h4 className="font-bold text-base text-[#e6e1e5] truncate">{friend.displayName}</h4>
         <p className="text-xs text-[#938f99]">
           {friendExpenses.length} {friendExpenses.length === 1 ? t('expenses_one') : t('expenses_other')}
         </p>
       </div>
-      <div className="text-right shrink-0 pointer-events-none">
+      <div className="text-right shrink-0 select-text">
         <span className={`status-badge ${groupBalance >= 0 ? 'bg-green-500/20 text-green-400' : 'bg-orange-500/20 text-orange-400'}`}>
-          {groupBalance >= 0 ? '+' : ''}{groupBalance.toFixed(2)}€
+          {groupBalance >= 0 ? '+' : ''}{formatCurrency(groupBalance, i18n.language)}
         </span>
       </div>
     </div>

@@ -71,6 +71,15 @@
   "friendSearchNoResults": "No friends found.",
   "friendSearchSelectHint": "Select a friend from the list.",
   "delete": "Delete",
-  "allPaid": "All Paid"
+  "confirmDelete": "Confirm delete?",
+  "confirm": "Confirm",
+  "cancel": "Cancel",
+  "allPaid": "All Paid",
+  "close": "Close",
+  "back": "Back",
+  "searchPlaceholder": "Search...",
+  "friendEmailPlaceholder": "example@gmail.com",
+  "friendNamePlaceholder": "How do you know them?",
+  "comingSoon": "{{view}} coming soon"
 }
 

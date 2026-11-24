@@ -36,8 +36,9 @@ export default function Header({
       <div className="flex items-center gap-3 min-w-0">
         {isFriendDetails && (
           <button
-            className="text-[#e6e1e5] p-2 -ml-2 rounded-full hover:bg-[#2b2930] transition-colors shrink-0"
+            className="text-[#e6e1e5] p-2 -ml-2 rounded-full hover:bg-[#2b2930] transition-colors shrink-0 select-none"
             onClick={onBack}
+            aria-label={t('back')}
           >
             <i className="fas fa-arrow-left text-lg"></i>
           </button>
@@ -73,25 +74,26 @@ export default function Header({
               type="text"
               value={searchTerm}
               onChange={(e) => onSearchChange(e.target.value.toLowerCase())}
-              placeholder="Procurar..."
+              placeholder={t('searchPlaceholder')}
               autoFocus
               className="bg-transparent border-none outline-none text-xs w-full text-[#e6e1e5] placeholder-[#938f99]"
             />
-            <button onClick={onSearchClose}>
+            <button className="select-none" onClick={onSearchClose} aria-label={t('close')}>
               <i className="fas fa-times text-[#938f99] text-xs"></i>
             </button>
           </div>
         )}
 
         {!searchOpen && !isFriendDetails && (
-          <button className="text-[#938f99]" onClick={onSearchOpen}>
+          <button className="text-[#938f99] select-none" onClick={onSearchOpen}>
             <i className="fas fa-search text-xl"></i>
           </button>
         )}
 
         {!isFriendDetails && (
-          <div
-            className="w-9 h-9 rounded-full bg-[#49454f] overflow-hidden border border-[#938f99]/40 cursor-pointer active:scale-90 transition-transform"
+          <button
+            type="button"
+            className="w-9 h-9 rounded-full bg-[#49454f] overflow-hidden border border-[#938f99]/40 cursor-pointer active:scale-90 transition-transform select-none"
             onClick={onAccountClick}
           >
             {user?.photoURL ? (
@@ -99,7 +101,7 @@ export default function Header({
             ) : (
               <i className="fas fa-user text-xs flex items-center justify-center h-full"></i>
             )}
-          </div>
+          </button>
         )}
       </div>
     </header>

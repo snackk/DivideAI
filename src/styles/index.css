@@ -22,7 +22,6 @@ body {
     background: radial-gradient(ellipse 120% 60% at 50% 0%, #26232b 0%, var(--md-sys-color-surface) 45%) fixed;
     color: #e6e1e5;
     -webkit-tap-highlight-color: transparent;
-    user-select: none;
     overflow-x: hidden;
 }
 
